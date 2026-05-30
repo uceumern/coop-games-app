@@ -27,6 +27,47 @@
     --radius: 6px;
     --shadow: 0 1px 4px rgba(26,66,104,0.20);
 }
+/* Dark mode variables */
+.dark {
+    --bg: #0f1d2e;
+    --bg-card: #172840;
+    --bg-hover: #1e3550;
+    --primary: #0f2a42;
+    --primary-light: #1a4268;
+    --accent: #d4a820;
+    --accent-hover: #b88a14;
+    --text: #e8eef4;
+    --text-dim: #8aaabf;
+    --green: #3db870;
+    --yellow: #c89a18;
+    --orange: #d46a20;
+    --red: #d44858;
+    --blue: #4a90d4;
+    --border: #2a4a68;
+    --silver: #2a4060;
+    --shadow: 0 1px 4px rgba(0,0,0,0.40);
+}
+@media (prefers-color-scheme: dark) {
+    :root:not(.light) {
+        --bg: #0f1d2e;
+        --bg-card: #172840;
+        --bg-hover: #1e3550;
+        --primary: #0f2a42;
+        --primary-light: #1a4268;
+        --accent: #d4a820;
+        --accent-hover: #b88a14;
+        --text: #e8eef4;
+        --text-dim: #8aaabf;
+        --green: #3db870;
+        --yellow: #c89a18;
+        --orange: #d46a20;
+        --red: #d44858;
+        --blue: #4a90d4;
+        --border: #2a4a68;
+        --silver: #2a4060;
+        --shadow: 0 1px 4px rgba(0,0,0,0.40);
+    }
+}
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -206,6 +247,28 @@ a:hover { text-decoration: underline; }
 .badge-obsolete { background: #b8cede; color: #253a50; }
 .badge-wait-ea { background: #f5dfa0; color: #5a3c00; }
 .badge-candidate { background: #a8c8e8; color: #0a2848; }
+/* Dark mode badge overrides */
+.dark .badge-released, @media (prefers-color-scheme: dark) { :root:not(.light) .badge-released { background: #1a4a2a; color: #7ddfa0; } }
+.dark .badge-released { background: #1a4a2a; color: #7ddfa0; }
+.dark .badge-ea { background: #4a3800; color: #f5c842; }
+.dark .badge-unreleased { background: #1a3448; color: #8ab8d8; }
+.dark .badge-notfound { background: #1e2e3e; color: #6a8aa0; }
+.dark .badge-played { background: #1a4a2a; color: #7ddfa0; }
+.dark .badge-abandoned { background: #4a1018; color: #f09098; }
+.dark .badge-obsolete { background: #1a3448; color: #8ab8d8; }
+.dark .badge-wait-ea { background: #4a3800; color: #f5c842; }
+.dark .badge-candidate { background: #0a2848; color: #7ab8e8; }
+@media (prefers-color-scheme: dark) {
+    :root:not(.light) .badge-released { background: #1a4a2a; color: #7ddfa0; }
+    :root:not(.light) .badge-ea { background: #4a3800; color: #f5c842; }
+    :root:not(.light) .badge-unreleased { background: #1a3448; color: #8ab8d8; }
+    :root:not(.light) .badge-notfound { background: #1e2e3e; color: #6a8aa0; }
+    :root:not(.light) .badge-played { background: #1a4a2a; color: #7ddfa0; }
+    :root:not(.light) .badge-abandoned { background: #4a1018; color: #f09098; }
+    :root:not(.light) .badge-obsolete { background: #1a3448; color: #8ab8d8; }
+    :root:not(.light) .badge-wait-ea { background: #4a3800; color: #f5c842; }
+    :root:not(.light) .badge-candidate { background: #0a2848; color: #7ab8e8; }
+}
 
 .review-bar { display: flex; align-items: center; gap: 0.4rem; }
 .review-bar-inner {
@@ -306,10 +369,10 @@ a:hover { text-decoration: underline; }
     text-align: center;
     padding: 0.4rem 1rem;
     border-left: 3px solid var(--accent);
-    background: var(--bg);
+    background: var(--bg-card);
     border-radius: 0 var(--radius) var(--radius) 0;
 }
-.stat-value { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+.stat-value { font-size: 1.2rem; font-weight: 700; color: var(--text); }
 .stat-label { font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
 
 .toast {
@@ -502,6 +565,14 @@ a:hover { text-decoration: underline; }
     <div class="settings-row">
         <label>Benutzername (für Änderungs-Tracking)</label>
         <input type="text" id="settingUserName" placeholder="z.B. Ulf, Falk">
+    </div>
+    <div class="settings-row">
+        <label>Erscheinungsbild</label>
+        <select id="settingTheme">
+            <option value="auto">Auto (Systemeinstellung)</option>
+            <option value="light">Hell</option>
+            <option value="dark">Dunkel</option>
+        </select>
     </div>
 
     <div style="margin-top:0.8rem; display:flex; gap:0.5rem; align-items:center;">
@@ -704,7 +775,23 @@ const STORAGE_KEY_WEEKENDS = 'coop_tracker_weekends';
 const PAT_KEY            = 'coop_tracker_pat';
 const GIST_ID_KEY        = 'coop_tracker_gist_id';
 const USER_NAME_KEY      = 'coop_tracker_username';
+const THEME_KEY          = 'coop_tracker_theme';
 const GIST_FILE          = 'coop_games_data.json';
+
+function applyTheme(theme) {
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    if (theme === 'dark') root.classList.add('dark');
+    else if (theme === 'light') root.classList.add('light');
+    // 'auto' = no class, CSS media query takes over
+}
+
+function loadTheme() {
+    const theme = localStorage.getItem(THEME_KEY) || 'auto';
+    applyTheme(theme);
+    const sel = document.getElementById('settingTheme');
+    if (sel) sel.value = theme;
+}
 
 const CATEGORIES = {
     vierer:      { label: 'Vierer-Runde',            icon: 'bi-people',          order: 0 },
@@ -757,6 +844,7 @@ function showSettings() {
     document.getElementById('settingPat').value      = getPat();
     document.getElementById('settingGistId').value   = getGistId();
     document.getElementById('settingUserName').value = getUserName();
+    document.getElementById('settingTheme').value    = localStorage.getItem(THEME_KEY) || 'auto';
     const panel = document.getElementById('settingsPanel');
     panel.classList.add('active');
     document.getElementById('configPrompt').style.display = 'none';
@@ -775,12 +863,15 @@ async function saveSettings() {
     const pat      = document.getElementById('settingPat').value.trim();
     const gistId   = document.getElementById('settingGistId').value.trim();
     const userName = document.getElementById('settingUserName').value.trim();
+    const theme    = document.getElementById('settingTheme').value;
 
     if (!pat || !gistId) { toast('PAT und Gist-ID sind Pflichtfelder'); return; }
 
     localStorage.setItem(PAT_KEY, pat);
     localStorage.setItem(GIST_ID_KEY, gistId);
     if (userName) localStorage.setItem(USER_NAME_KEY, userName);
+    localStorage.setItem(THEME_KEY, theme);
+    applyTheme(theme);
 
     setSyncStatus('loading', 'Verbinde...');
     await syncFromGist();
@@ -914,6 +1005,7 @@ function saveWeekends(){ localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringi
 
 // ==================== INIT ====================
 function init() {
+    loadTheme();
     if (!isConfigured()) {
         // Show config prompt — nothing else loaded
         document.getElementById('configPrompt').style.display = 'flex';
