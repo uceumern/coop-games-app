@@ -527,9 +527,9 @@ a:hover { text-decoration: underline; }
 <div id="configPrompt" class="active">
     <div class="config-box">
         <i class="bi bi-lock"></i>
-        <h2>Konfiguration erforderlich</h2>
-        <p>Bitte Gist-ID und Personal Access Token in den Einstellungen hinterlegen, um fortzufahren.</p>
-        <button class="btn btn-primary" onclick="showSettings()"><i class="bi bi-gear"></i> Einstellungen öffnen</button>
+        <h2 data-i18n="config_title">Konfiguration erforderlich</h2>
+        <p data-i18n="config_text">Bitte Gist-ID und Personal Access Token in den Einstellungen hinterlegen, um fortzufahren.</p>
+        <button class="btn btn-primary" onclick="showSettings()"><i class="bi bi-gear"></i> <span data-i18n="config_btn">Einstellungen öffnen</span></button>
     </div>
 </div>
 
@@ -537,7 +537,7 @@ a:hover { text-decoration: underline; }
     <h1><i class="bi bi-controller"></i>Coop Games Tracker</h1>
     <div class="header-actions">
         <span id="headerSyncStatus" style="font-size:0.72rem;color:rgba(255,255,255,0.55);align-self:center;margin-right:0.25rem"></span>
-        <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> Hinzufügen</button>
+        <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> <span data-i18n="btn_add">Hinzufügen</span></button>
         <button class="btn" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
         <button class="btn" id="btnExport" onclick="exportData()"><i class="bi bi-download"></i> Export</button>
         <button class="btn" id="btnImport" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Import</button>
@@ -553,30 +553,38 @@ a:hover { text-decoration: underline; }
 
 <div class="settings-panel" id="settingsPanel">
     <div class="settings-row">
-        <label>GitHub Personal Access Token</label>
+        <label data-i18n="settings_pat_label">GitHub Personal Access Token</label>
         <input type="password" id="settingPat" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-        <small>Token mit <code>gist</code>-Berechtigung. Wird nur lokal im Browser gespeichert.</small>
+        <small data-i18n="settings_pat_hint">Token mit <code>gist</code>-Berechtigung. Wird nur lokal im Browser gespeichert.</small>
     </div>
     <div class="settings-row">
-        <label>Gist ID</label>
+        <label data-i18n="settings_gistid_label">Gist ID</label>
         <input type="text" id="settingGistId" placeholder="z.B. a1b2c3d4e5f6...">
-        <small>Die ID des privaten Gists (aus der URL: gist.github.com/{user}/{id}).</small>
+        <small data-i18n="settings_gistid_hint">Die ID des privaten Gists (aus der URL: gist.github.com/{user}/{id}).</small>
     </div>
     <div class="settings-row">
-        <label>Benutzername (für Änderungs-Tracking)</label>
-        <input type="text" id="settingUserName" placeholder="z.B. Ulf, Falk">
+        <label data-i18n="settings_username_label">Benutzername (für Änderungs-Tracking)</label>
+        <input type="text" id="settingUserName" data-i18n-ph="settings_username_placeholder" placeholder="z.B. Ulf, Falk">
     </div>
     <div class="settings-row">
-        <label>Erscheinungsbild</label>
+        <label data-i18n="settings_theme_label">Erscheinungsbild</label>
         <select id="settingTheme">
             <option value="auto">Auto (Systemeinstellung)</option>
             <option value="light">Hell</option>
             <option value="dark">Dunkel</option>
         </select>
     </div>
+    <div class="settings-row">
+        <label data-i18n="settings_lang_label">Sprache</label>
+        <select id="settingLang">
+            <option value="auto">Auto (Browser)</option>
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+        </select>
+    </div>
 
     <div style="margin-top:0.8rem; display:flex; gap:0.5rem; align-items:center;">
-        <button class="btn btn-primary" style="color:#fff" onclick="saveSettings()"><i class="bi bi-check"></i> Speichern & verbinden</button>
+        <button class="btn btn-primary" style="color:#fff" onclick="saveSettings()"><i class="bi bi-check"></i> <span data-i18n="settings_save">Speichern & verbinden</span></button>
         <span id="syncStatus" style="font-size:0.78rem"></span>
     </div>
 </div>
@@ -589,18 +597,18 @@ a:hover { text-decoration: underline; }
     <table class="game-table">
         <thead>
             <tr>
-                <th onclick="sortByColumn('name')" id="th-name">Spiel <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('category')" id="th-category">Kategorie <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('steam_status')" id="th-steam_status">Steam Status <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('user_status')" id="th-user_status">User Status <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('price')" id="th-price">Preis <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('review_pct')" id="th-review_pct">Bewertung <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('review_count')" id="th-review_count">Reviews <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('added')" id="th-added" class="col-added">Hinzugefügt <span class="sort-arrow"></span></th>
-                <th>Aktionen</th>
+                <th onclick="sortByColumn('name')" id="th-name"><span data-i18n="th_game">Spiel</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('category')" id="th-category"><span data-i18n="th_category">Kategorie</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('steam_status')" id="th-steam_status"><span data-i18n="th_steam_status">Steam Status</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('user_status')" id="th-user_status"><span data-i18n="th_user_status">User Status</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('price')" id="th-price"><span data-i18n="th_price">Preis</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('review_pct')" id="th-review_pct"><span data-i18n="th_rating">Bewertung</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('review_count')" id="th-review_count"><span data-i18n="th_reviews">Reviews</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortByColumn('added')" id="th-added" class="col-added"><span data-i18n="th_added">Hinzugefügt</span> <span class="sort-arrow"></span></th>
+                <th data-i18n="th_actions">Aktionen</th>
             </tr>
             <tr class="filter-row">
-                <th><input type="text" id="filterName" placeholder="Suche..." oninput="renderGames()"></th>
+                <th><input type="text" id="filterName" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderGames()"></th>
                 <th>
                     <select id="filterCategory" onchange="renderGames()">
                         <option value="">Alle</option>
@@ -645,7 +653,7 @@ a:hover { text-decoration: underline; }
     </table>
     </div>
     <p id="emptyMsg" style="text-align:center;padding:2rem;color:var(--text-dim);display:none">
-        Keine Spiele in dieser Ansicht.
+        <span data-i18n="empty_games">Keine Spiele in dieser Ansicht.</span>
     </p>
 </div>
 </div>
@@ -658,16 +666,16 @@ a:hover { text-decoration: underline; }
     <table class="game-table" id="weeklyTable">
         <thead>
             <tr>
-                <th onclick="sortWeeklyBy('date')">Datum <span class="sort-arrow"></span></th>
-                <th onclick="sortWeeklyBy('title')">Titel <span class="sort-arrow"></span></th>
-                <th onclick="sortWeeklyBy('hours')">Stunden <span class="sort-arrow"></span></th>
-                <th onclick="sortWeeklyBy('rating')">Fazit <span class="sort-arrow"></span></th>
-                <th>Bemerkung</th>
-                <th>Aktionen</th>
+                <th onclick="sortWeeklyBy('date')"><span data-i18n="th_date">Datum</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortWeeklyBy('title')"><span data-i18n="th_title">Titel</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortWeeklyBy('hours')"><span data-i18n="th_hours">Stunden</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortWeeklyBy('rating')"><span data-i18n="th_verdict">Fazit</span> <span class="sort-arrow"></span></th>
+                <th data-i18n="th_notes">Bemerkung</th>
+                <th data-i18n="th_actions">Aktionen</th>
             </tr>
             <tr class="filter-row">
                 <th></th>
-                <th><input type="text" id="searchWeekly" placeholder="Suche..." oninput="renderWeekly()"></th>
+                <th><input type="text" id="searchWeekly" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderWeekly()"></th>
                 <th></th>
                 <th>
                     <select id="filterWeeklyRating" onchange="renderWeekly()">
@@ -695,15 +703,15 @@ a:hover { text-decoration: underline; }
     <table class="game-table" id="weekendsTable">
         <thead>
             <tr>
-                <th onclick="sortWeekendsBy('date')">Datum <span class="sort-arrow"></span></th>
-                <th onclick="sortWeekendsBy('title')">Titel <span class="sort-arrow"></span></th>
-                <th onclick="sortWeekendsBy('location')">Ort <span class="sort-arrow"></span></th>
-                <th>Sonderaktion</th>
-                <th>Aktionen</th>
+                <th onclick="sortWeekendsBy('date')"><span data-i18n="th_date">Datum</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortWeekendsBy('title')"><span data-i18n="th_title">Titel</span> <span class="sort-arrow"></span></th>
+                <th onclick="sortWeekendsBy('location')"><span data-i18n="th_location">Ort</span> <span class="sort-arrow"></span></th>
+                <th data-i18n="th_special">Sonderaktion</th>
+                <th data-i18n="th_actions">Aktionen</th>
             </tr>
             <tr class="filter-row">
                 <th></th>
-                <th><input type="text" id="searchWeekends" placeholder="Suche..." oninput="renderWeekends()"></th>
+                <th><input type="text" id="searchWeekends" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderWeekends()"></th>
                 <th><select id="filterWeekendsLocation" onchange="renderWeekends()"><option value="">Alle</option></select></th>
                 <th></th>
                 <th></th>
@@ -721,46 +729,30 @@ a:hover { text-decoration: underline; }
         <h2 id="modalTitle">Spiel hinzufügen</h2>
         <div class="modal-body">
         <div class="form-group">
-            <label>Name *</label>
-            <input type="text" id="formName" placeholder="Spielname">
+            <label data-i18n="modal_name">Name *</label>
+            <input type="text" id="formName" placeholder="Game name">
         </div>
         <div class="form-group">
-            <label id="formField2Label">Steam AppID (optional)</label>
-            <input type="text" id="formAppId" placeholder="z.B. 1966720">
+            <label id="formField2Label" data-i18n="modal_appid">Steam AppID (optional)</label>
+            <input type="text" id="formAppId" placeholder="e.g. 1966720">
         </div>
         <div class="form-group" id="formCategoryGroup">
-            <label id="formField3Label">Kategorie</label>
-            <select id="formCategory">
-                <option value="vierer">Vierer-Runde</option>
-                <option value="hauptliste">Hauptliste</option>
-                <option value="neue">Neue Spiele</option>
-                <option value="top10">Top 10</option>
-                <option value="taktik">Taktik / Shooter</option>
-                <option value="replay">Replay</option>
-                <option value="maybe">Maybe</option>
-                <option value="earlyaccess">Early Access / In Entwicklung</option>
-                <option value="aeltere">Ältere Einträge</option>
-            </select>
-            <input type="text" id="formDate" placeholder="z.B. 2026/05" style="display:none">
+            <label id="formField3Label" data-i18n="th_category">Kategorie</label>
+            <select id="formCategory"></select>
+            <input type="text" id="formDate" placeholder="e.g. 2026/05" style="display:none">
         </div>
         <div class="form-group" id="formStatusGroup">
-            <label>Status</label>
-            <select id="formStatus">
-                <option value="candidate">Kandidat</option>
-                <option value="played">Gespielt</option>
-                <option value="abandoned">Abgebrochen</option>
-                <option value="obsolete">Aussortiert</option>
-                <option value="wait-ea">Warte auf EA-Reife</option>
-            </select>
+            <label data-i18n="modal_status">Status</label>
+            <select id="formStatus"></select>
         </div>
         <div class="form-group">
-            <label>Notizen</label>
-            <input type="text" id="formNotes" placeholder="Optionale Notizen...">
+            <label data-i18n="modal_notes">Notizen</label>
+            <input type="text" id="formNotes" data-i18n-ph="modal_notes_placeholder" placeholder="Optionale Notizen...">
         </div>
         </div>
         <div class="modal-actions">
-            <button class="btn" onclick="closeModal()">Abbrechen</button>
-            <button class="btn btn-primary" onclick="saveGame()">Speichern</button>
+            <button class="btn" onclick="closeModal()" data-i18n="modal_cancel">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveGame()" data-i18n="modal_save">Speichern</button>
         </div>
     </div>
 </div>
@@ -776,7 +768,182 @@ const PAT_KEY            = 'coop_tracker_pat';
 const GIST_ID_KEY        = 'coop_tracker_gist_id';
 const USER_NAME_KEY      = 'coop_tracker_username';
 const THEME_KEY          = 'coop_tracker_theme';
+const LANG_KEY           = 'coop_tracker_lang';
 const GIST_FILE          = 'coop_games_data.json';
+
+// ==================== i18n ====================
+const STRINGS = {
+  de: {
+    btn_add: 'Hinzufügen',
+    settings_pat_label: 'GitHub Personal Access Token',
+    settings_pat_hint: 'Token mit <code>gist</code>-Berechtigung. Wird nur lokal im Browser gespeichert.',
+    settings_gistid_label: 'Gist ID',
+    settings_gistid_hint: 'Die ID des privaten Gists (aus der URL: gist.github.com/{user}/{id}).',
+    settings_username_label: 'Benutzername (für Änderungs-Tracking)',
+    settings_username_placeholder: 'z.B. Ulf, Falk',
+    settings_theme_label: 'Erscheinungsbild',
+    settings_theme_auto: 'Auto (Systemeinstellung)',
+    settings_theme_light: 'Hell',
+    settings_theme_dark: 'Dunkel',
+    settings_lang_label: 'Sprache',
+    settings_lang_auto: 'Auto (Browser)',
+    settings_lang_de: 'Deutsch',
+    settings_lang_en: 'English',
+    settings_save: 'Speichern & verbinden',
+    th_game: 'Spiel', th_category: 'Kategorie', th_steam_status: 'Steam Status',
+    th_user_status: 'User Status', th_price: 'Preis', th_rating: 'Bewertung',
+    th_reviews: 'Reviews', th_added: 'Hinzugefügt', th_actions: 'Aktionen',
+    th_date: 'Datum', th_title: 'Titel', th_hours: 'Stunden',
+    th_verdict: 'Fazit', th_notes: 'Bemerkung', th_location: 'Ort', th_special: 'Sonderaktion',
+    filter_all: 'Alle', filter_search: 'Suche...',
+    cat_vierer: 'Vierer-Runde', cat_hauptliste: 'Hauptliste', cat_neue: 'Neue Spiele',
+    cat_top10: 'Top 10', cat_taktik: 'Taktik / Shooter', cat_replay: 'Replay',
+    cat_maybe: 'Maybe', cat_earlyaccess: 'Early Access', cat_aeltere: 'Ältere Einträge',
+    status_candidate: 'Kandidat', status_played: 'Gespielt', status_abandoned: 'Abgebrochen',
+    status_obsolete: 'Aussortiert', status_wait_ea: 'Warte EA',
+    steam_released: 'Released', steam_ea: 'Early Access', steam_unreleased: 'Unreleased', steam_unknown: 'Unbekannt',
+    stat_total: 'Gesamt', stat_candidates: 'Kandidaten', stat_released: 'Released',
+    stat_played: 'Gespielt', stat_avg_rating: 'Ø Bewertung', stat_games: 'Spiele',
+    stat_total_hours: 'Stunden gesamt', stat_avg_hours: 'Ø Stunden',
+    stat_years_active: 'Jahre aktiv', stat_weekends: 'Weekends', stat_years: 'Jahre', stat_at: 'bei',
+    modal_add_game: 'Spiel hinzufügen', modal_edit_game: 'Spiel bearbeiten',
+    modal_add_weekly: 'Weekly Eintrag hinzufügen', modal_edit_weekly: 'Weekly Eintrag bearbeiten',
+    modal_add_weekend: 'Coop Weekend hinzufügen', modal_edit_weekend: 'Coop Weekend bearbeiten',
+    modal_name: 'Name *', modal_appid: 'Steam AppID (optional)', modal_hours: 'Stunden',
+    modal_date: 'Datum *', modal_status: 'Status', modal_notes: 'Notizen',
+    modal_notes_placeholder: 'Optionale Notizen...', modal_cancel: 'Abbrechen', modal_save: 'Speichern',
+    config_title: 'Konfiguration erforderlich',
+    config_text: 'Bitte Gist-ID und Personal Access Token in den Einstellungen hinterlegen, um fortzufahren.',
+    config_btn: 'Einstellungen öffnen',
+    empty_games: 'Keine Spiele in dieser Ansicht.',
+    toast_saved: 'Gespeichert', toast_deleted: 'Eintrag gelöscht',
+    toast_pat_required: 'PAT und Gist-ID sind Pflichtfelder',
+    toast_imported: 'Daten importiert', toast_status_prefix: 'Status: ',
+    sync_connecting: 'Verbinde...', sync_loading: 'Lade...', sync_syncing: 'Synchronisiere...',
+    sync_synced: 'Synchronisiert', sync_error: 'Fehler', sync_offline: 'Nicht konfiguriert',
+  },
+  en: {
+    btn_add: 'Add',
+    settings_pat_label: 'GitHub Personal Access Token',
+    settings_pat_hint: 'Token with <code>gist</code> scope. Stored locally in the browser only.',
+    settings_gistid_label: 'Gist ID',
+    settings_gistid_hint: 'The ID of your private Gist (from the URL: gist.github.com/{user}/{id}).',
+    settings_username_label: 'Username (for change tracking)',
+    settings_username_placeholder: 'e.g. Ulf, Falk',
+    settings_theme_label: 'Appearance',
+    settings_theme_auto: 'Auto (system)',
+    settings_theme_light: 'Light',
+    settings_theme_dark: 'Dark',
+    settings_lang_label: 'Language',
+    settings_lang_auto: 'Auto (browser)',
+    settings_lang_de: 'Deutsch',
+    settings_lang_en: 'English',
+    settings_save: 'Save & connect',
+    th_game: 'Game', th_category: 'Category', th_steam_status: 'Steam Status',
+    th_user_status: 'Status', th_price: 'Price', th_rating: 'Rating',
+    th_reviews: 'Reviews', th_added: 'Added', th_actions: 'Actions',
+    th_date: 'Date', th_title: 'Title', th_hours: 'Hours',
+    th_verdict: 'Verdict', th_notes: 'Notes', th_location: 'Location', th_special: 'Special',
+    filter_all: 'All', filter_search: 'Search...',
+    cat_vierer: 'Four-Player', cat_hauptliste: 'Main List', cat_neue: 'New Games',
+    cat_top10: 'Top 10', cat_taktik: 'Tactics / Shooter', cat_replay: 'Replay',
+    cat_maybe: 'Maybe', cat_earlyaccess: 'Early Access', cat_aeltere: 'Older Entries',
+    status_candidate: 'Candidate', status_played: 'Played', status_abandoned: 'Abandoned',
+    status_obsolete: 'Discarded', status_wait_ea: 'Wait EA',
+    steam_released: 'Released', steam_ea: 'Early Access', steam_unreleased: 'Unreleased', steam_unknown: 'Unknown',
+    stat_total: 'Total', stat_candidates: 'Candidates', stat_released: 'Released',
+    stat_played: 'Played', stat_avg_rating: 'Avg Rating', stat_games: 'Games',
+    stat_total_hours: 'Total Hours', stat_avg_hours: 'Avg Hours',
+    stat_years_active: 'Years Active', stat_weekends: 'Weekends', stat_years: 'Years', stat_at: 'at',
+    modal_add_game: 'Add Game', modal_edit_game: 'Edit Game',
+    modal_add_weekly: 'Add Weekly Entry', modal_edit_weekly: 'Edit Weekly Entry',
+    modal_add_weekend: 'Add Coop Weekend', modal_edit_weekend: 'Edit Coop Weekend',
+    modal_name: 'Name *', modal_appid: 'Steam AppID (optional)', modal_hours: 'Hours',
+    modal_date: 'Date *', modal_status: 'Status', modal_notes: 'Notes',
+    modal_notes_placeholder: 'Optional notes...', modal_cancel: 'Cancel', modal_save: 'Save',
+    config_title: 'Configuration required',
+    config_text: 'Please enter your Gist ID and Personal Access Token in settings to continue.',
+    config_btn: 'Open settings',
+    empty_games: 'No games in this view.',
+    toast_saved: 'Saved', toast_deleted: 'Entry deleted',
+    toast_pat_required: 'PAT and Gist ID are required',
+    toast_imported: 'Data imported', toast_status_prefix: 'Status: ',
+    sync_connecting: 'Connecting...', sync_loading: 'Loading...', sync_syncing: 'Syncing...',
+    sync_synced: 'Synced', sync_error: 'Error', sync_offline: 'Not configured',
+  }
+};
+
+let currentLang = 'de';
+
+function detectLang() {
+  const stored = localStorage.getItem(LANG_KEY);
+  if (stored && stored !== 'auto') return stored;
+  return (navigator.language || 'en').startsWith('de') ? 'de' : 'en';
+}
+
+function t(key) {
+  return (STRINGS[currentLang] || STRINGS.de)[key] ?? STRINGS.de[key] ?? key;
+}
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.innerHTML = t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    el.placeholder = t(el.dataset.i18nPh);
+  });
+  _rebuildSelects();
+}
+
+function _rebuildSelects() {
+  const catOptions = () => Object.entries(CATEGORIES)
+    .map(([k]) => `<option value="${k}">${t('cat_'+k)}</option>`).join('');
+  const statusOptions = () => `
+    <option value="candidate">${t('status_candidate')}</option>
+    <option value="played">${t('status_played')}</option>
+    <option value="abandoned">${t('status_abandoned')}</option>
+    <option value="obsolete">${t('status_obsolete')}</option>
+    <option value="wait-ea">${t('status_wait_ea')}</option>`;
+
+  const filterCat = document.getElementById('filterCategory');
+  if (filterCat) { const v = filterCat.value; filterCat.innerHTML = `<option value="">${t('filter_all')}</option>${catOptions()}`; filterCat.value = v; }
+
+  const filterSteam = document.getElementById('filterSteamStatus');
+  if (filterSteam) { const v = filterSteam.value; filterSteam.innerHTML = `
+    <option value="">${t('filter_all')}</option>
+    <option value="released">${t('steam_released')}</option>
+    <option value="ea">${t('steam_ea')}</option>
+    <option value="unreleased">${t('steam_unreleased')}</option>
+    <option value="unknown">${t('steam_unknown')}</option>`; filterSteam.value = v; }
+
+  const filterStatus = document.getElementById('filterUserStatus');
+  if (filterStatus) { const v = filterStatus.value; filterStatus.innerHTML = `<option value="">${t('filter_all')}</option>${statusOptions()}`; filterStatus.value = v; }
+
+  const formCat = document.getElementById('formCategory');
+  if (formCat) { const v = formCat.value; formCat.innerHTML = catOptions(); formCat.value = v; }
+
+  const formStatus = document.getElementById('formStatus');
+  if (formStatus) { const v = formStatus.value; formStatus.innerHTML = statusOptions(); formStatus.value = v; }
+
+  const themeSel = document.getElementById('settingTheme');
+  if (themeSel) { const v = themeSel.value; themeSel.innerHTML = `
+    <option value="auto">${t('settings_theme_auto')}</option>
+    <option value="light">${t('settings_theme_light')}</option>
+    <option value="dark">${t('settings_theme_dark')}</option>`; themeSel.value = v; }
+
+  const langSel = document.getElementById('settingLang');
+  if (langSel) { const v = langSel.value; langSel.innerHTML = `
+    <option value="auto">${t('settings_lang_auto')}</option>
+    <option value="de">${t('settings_lang_de')}</option>
+    <option value="en">${t('settings_lang_en')}</option>`; langSel.value = v; }
+}
+
+function loadLang() {
+  currentLang = detectLang();
+  const sel = document.getElementById('settingLang');
+  if (sel) sel.value = localStorage.getItem(LANG_KEY) || 'auto';
+  applyI18n();
+}
 
 function applyTheme(theme) {
     const root = document.documentElement;
@@ -845,6 +1012,7 @@ function showSettings() {
     document.getElementById('settingGistId').value   = getGistId();
     document.getElementById('settingUserName').value = getUserName();
     document.getElementById('settingTheme').value    = localStorage.getItem(THEME_KEY) || 'auto';
+    document.getElementById('settingLang').value     = localStorage.getItem(LANG_KEY) || 'auto';
     const panel = document.getElementById('settingsPanel');
     panel.classList.add('active');
     document.getElementById('configPrompt').style.display = 'none';
@@ -864,16 +1032,20 @@ async function saveSettings() {
     const gistId   = document.getElementById('settingGistId').value.trim();
     const userName = document.getElementById('settingUserName').value.trim();
     const theme    = document.getElementById('settingTheme').value;
+    const lang     = document.getElementById('settingLang').value;
 
-    if (!pat || !gistId) { toast('PAT und Gist-ID sind Pflichtfelder'); return; }
+    if (!pat || !gistId) { toast(t('toast_pat_required')); return; }
 
     localStorage.setItem(PAT_KEY, pat);
     localStorage.setItem(GIST_ID_KEY, gistId);
     if (userName) localStorage.setItem(USER_NAME_KEY, userName);
     localStorage.setItem(THEME_KEY, theme);
+    localStorage.setItem(LANG_KEY, lang);
     applyTheme(theme);
+    currentLang = detectLang();
+    applyI18n();
 
-    setSyncStatus('loading', 'Verbinde...');
+    setSyncStatus('loading', t('sync_connecting'));
     await syncFromGist();
     // If still not loaded after sync attempt, show config prompt again
     if (games.length === 0) {
@@ -913,7 +1085,7 @@ async function saveToGist(payload) {
 
 async function syncFromGist() {
     if (!isConfigured()) { setSyncStatus('offline'); return; }
-    setSyncStatus('loading', 'Lade...');
+    setSyncStatus('loading', t('sync_loading'));
     try {
         const data = await loadFromGist();
         if (data.watchlist)  { games        = data.watchlist;  localStorage.setItem(STORAGE_KEY, JSON.stringify(games)); }
@@ -965,20 +1137,20 @@ function setSyncStatus(state, lastModified, user, error) {
     switch (state) {
         case 'synced': {
             const time = lastModified ? new Date(lastModified).toLocaleString('de-DE') : '';
-            settingsHtml = `<span style="color:var(--green)"><i class="bi bi-cloud-check"></i> Synchronisiert</span>${time ? ` (${time}${user ? ', ' + user : ''})` : ''}`;
+            settingsHtml = `<span style="color:var(--green)"><i class="bi bi-cloud-check"></i> ${t('sync_synced')}</span>${time ? ` (${time}${user ? ', ' + user : ''})` : ''}`;
             headerHtml   = `<i class="bi bi-cloud-check" style="color:rgba(255,255,255,0.5)"></i> ${time ? time.split(', ')[1] || time : ''}`;
             break;
         }
         case 'error':
-            settingsHtml = `<span style="color:var(--red)"><i class="bi bi-cloud-slash"></i> Fehler: ${error || 'Verbindung fehlgeschlagen'}</span>`;
+            settingsHtml = `<span style="color:var(--red)"><i class="bi bi-cloud-slash"></i> ${t('sync_error')}: ${error || ''}</span>`;
             headerHtml   = `<i class="bi bi-cloud-slash" style="color:rgba(255,100,100,0.8)"></i>`;
             break;
         case 'loading':
-            settingsHtml = `<span style="color:var(--text-dim)"><i class="bi bi-arrow-clockwise"></i> ${error || 'Synchronisiere...'}</span>`;
+            settingsHtml = `<span style="color:var(--text-dim)"><i class="bi bi-arrow-clockwise"></i> ${error || t('sync_syncing')}</span>`;
             headerHtml   = `<i class="bi bi-arrow-clockwise" style="color:rgba(255,255,255,0.4)"></i>`;
             break;
         case 'offline':
-            settingsHtml = `<span style="color:var(--text-dim)"><i class="bi bi-hdd"></i> Nicht konfiguriert</span>`;
+            settingsHtml = `<span style="color:var(--text-dim)"><i class="bi bi-hdd"></i> ${t('sync_offline')}</span>`;
             headerHtml   = '';
             break;
     }
@@ -1005,6 +1177,7 @@ function saveWeekends(){ localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringi
 
 // ==================== INIT ====================
 function init() {
+    loadLang();
     loadTheme();
     if (!isConfigured()) {
         // Show config prompt — nothing else loaded
@@ -1032,11 +1205,11 @@ function renderAll() {
 
 function renderTabs() {
     const tabsEl = document.getElementById('tabs');
-    let html = `<div class="tab ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">Alle <span class="count">${games.length}</span></div>`;
+    let html = `<div class="tab ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">${t('filter_all')} <span class="count">${games.length}</span></div>`;
     for (const [key, cat] of Object.entries(CATEGORIES)) {
         const count = games.filter(g => g.category === key).length;
         if (count === 0) continue;
-        html += `<div class="tab ${activeCategory === key ? 'active' : ''}" onclick="setCategory('${key}')"><i class="${cat.icon}"></i> ${cat.label} <span class="count">${count}</span></div>`;
+        html += `<div class="tab ${activeCategory === key ? 'active' : ''}" onclick="setCategory('${key}')"><i class="${cat.icon}"></i> ${t('cat_'+key)} <span class="count">${count}</span></div>`;
     }
     tabsEl.innerHTML = html;
 }
@@ -1052,11 +1225,11 @@ function renderStats() {
         ? Math.round(withReviews.reduce((s, g) => s + g.steam.review_pct, 0) / withReviews.length) : 0;
     const released = games.filter(g => g.steam?.steam_status === 'released').length;
     document.getElementById('stats').innerHTML = `
-        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Gesamt</div></div>
-        <div class="stat"><div class="stat-value">${candidates}</div><div class="stat-label">Kandidaten</div></div>
-        <div class="stat"><div class="stat-value">${released}</div><div class="stat-label">Released</div></div>
-        <div class="stat"><div class="stat-value">${played}</div><div class="stat-label">Gespielt</div></div>
-        <div class="stat"><div class="stat-value">${avgReview}%</div><div class="stat-label">&#216; Bewertung</div></div>
+        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">${t('stat_total')}</div></div>
+        <div class="stat"><div class="stat-value">${candidates}</div><div class="stat-label">${t('stat_candidates')}</div></div>
+        <div class="stat"><div class="stat-value">${released}</div><div class="stat-label">${t('stat_released')}</div></div>
+        <div class="stat"><div class="stat-value">${played}</div><div class="stat-label">${t('stat_played')}</div></div>
+        <div class="stat"><div class="stat-value">${avgReview}%</div><div class="stat-label">${t('stat_avg_rating')}</div></div>
     `;
 }
 
@@ -1100,9 +1273,12 @@ function renderGames() {
     tbody.innerHTML = filtered.map(game => {
         const steam          = game.steam || {};
         const catInfo        = CATEGORIES[game.category];
-        const catLabel       = catInfo ? `<i class="${catInfo.icon}"></i> ${catInfo.label}` : game.category;
+        const catLabel       = catInfo ? `<i class="${catInfo.icon}"></i> ${t('cat_'+game.category)}` : game.category;
         const statusInfo     = STATUS_LABELS[game.status] || STATUS_LABELS.candidate;
-        const steamStatusInfo = STEAM_STATUS_LABELS[steam.steam_status] || STEAM_STATUS_LABELS.unknown;
+        const statusLabel    = t('status_'+(game.status||'candidate').replace(/-/g,'_'));
+        const steamKey       = steam.steam_status || 'unknown';
+        const steamStatusInfo = STEAM_STATUS_LABELS[steamKey] || STEAM_STATUS_LABELS.unknown;
+        const steamLabel     = t('steam_'+steamKey);
         let reviewHtml = '—';
         if (steam.review_pct != null) {
             const color = getReviewColor(steam.review_pct);
@@ -1121,8 +1297,8 @@ function renderGames() {
         return `<tr>
             <td>${steamLink}${notesHtml}</td>
             <td><small>${catLabel}</small></td>
-            <td><span class="badge ${steamStatusInfo.class}">${steamStatusInfo.label}</span></td>
-            <td><span class="badge ${statusInfo.class} badge-clickable" onclick="cycleStatus('${game.id}')" title="Klicken zum Ändern">${statusInfo.label}</span></td>
+            <td><span class="badge ${steamStatusInfo.class}">${steamLabel}</span></td>
+            <td><span class="badge ${statusInfo.class} badge-clickable" onclick="cycleStatus('${game.id}')" title="Klicken zum Ändern">${statusLabel}</span></td>
             <td>${steam.price || '—'}</td>
             <td>${reviewHtml}</td>
             <td>${countHtml}</td>
@@ -1143,7 +1319,7 @@ function cycleStatus(id) {
     saveGames();
     renderGames();
     renderStats();
-    toast(`Status: ${STATUS_LABELS[game.status].label}`);
+    toast(t('toast_status_prefix') + t('status_'+(game.status||'candidate').replace(/-/g,'_')));
 }
 
 function getReviewColor(pct) {
@@ -1193,9 +1369,9 @@ function openAddModal() {
     modal.dataset.mode = activeView;
     document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
     if (activeView === 'weekly') {
-        document.getElementById('modalTitle').textContent = 'Weekly Eintrag hinzufügen';
-        document.getElementById('formField2Label').textContent = 'Stunden (optional)';
-        document.getElementById('formField3Label').textContent = 'Datum *';
+        document.getElementById('modalTitle').textContent = t('modal_add_weekly');
+        document.getElementById('formField2Label').textContent = t('modal_hours');
+        document.getElementById('formField3Label').textContent = t('modal_date');
         document.getElementById('formStatusGroup').style.display = 'none';
         document.getElementById('formCategory').style.display = 'none';
         document.getElementById('formDate').style.display = '';
@@ -1204,9 +1380,9 @@ function openAddModal() {
         document.getElementById('formAppId').value = '';
         document.getElementById('formNotes').value = '';
     } else if (activeView === 'weekends') {
-        document.getElementById('modalTitle').textContent = 'Weekend Eintrag hinzufügen';
-        document.getElementById('formField2Label').textContent = 'Ort (z.B. Ulf, Falk)';
-        document.getElementById('formField3Label').textContent = 'Datum (z.B. 07.05.–10.05.2026)';
+        document.getElementById('modalTitle').textContent = t('modal_add_weekend');
+        document.getElementById('formField2Label').textContent = t('th_location');
+        document.getElementById('formField3Label').textContent = t('modal_date');
         document.getElementById('formStatusGroup').style.display = 'none';
         document.getElementById('formCategory').style.display = 'none';
         document.getElementById('formDate').style.display = '';
@@ -1215,9 +1391,9 @@ function openAddModal() {
         document.getElementById('formAppId').value = '';
         document.getElementById('formNotes').value = '';
     } else {
-        document.getElementById('modalTitle').textContent = 'Spiel hinzufügen';
-        document.getElementById('formField2Label').textContent = 'Steam AppID (optional)';
-        document.getElementById('formField3Label').textContent = 'Kategorie';
+        document.getElementById('modalTitle').textContent = t('modal_add_game');
+        document.getElementById('formField2Label').textContent = t('modal_appid');
+        document.getElementById('formField3Label').textContent = t('th_category');
         document.getElementById('formCategory').style.display = '';
         document.getElementById('formDate').style.display = 'none';
         document.getElementById('formCategory').value = 'hauptliste';
@@ -1236,9 +1412,9 @@ function openEditModal(id) {
     const modal = document.getElementById('modal');
     modal.dataset.mode = 'watchlist';
     document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
-    document.getElementById('modalTitle').textContent = 'Spiel bearbeiten';
-    document.getElementById('formField2Label').textContent = 'Steam AppID (optional)';
-    document.getElementById('formField3Label').textContent = 'Kategorie';
+    document.getElementById('modalTitle').textContent = t('modal_edit_game');
+    document.getElementById('formField2Label').textContent = t('modal_appid');
+    document.getElementById('formField3Label').textContent = t('th_category');
     document.getElementById('formCategory').style.display = '';
     document.getElementById('formDate').style.display = 'none';
     document.getElementById('formName').value = game.name;
@@ -1383,10 +1559,10 @@ function renderWeeklyStats() {
     const avgHours   = withHours > 0 ? Math.round(totalHours / withHours) : 0;
     const years = new Set(weeklyGames.map(g => g.date?.split('/')[0])).size;
     document.getElementById('stats-weekly').innerHTML = `
-        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Spiele</div></div>
-        <div class="stat"><div class="stat-value">${Math.round(totalHours)}</div><div class="stat-label">Stunden gesamt</div></div>
-        <div class="stat"><div class="stat-value">${avgHours}</div><div class="stat-label">&#216; Stunden</div></div>
-        <div class="stat"><div class="stat-value">${years}</div><div class="stat-label">Jahre aktiv</div></div>
+        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">${t('stat_games')}</div></div>
+        <div class="stat"><div class="stat-value">${Math.round(totalHours)}</div><div class="stat-label">${t('stat_total_hours')}</div></div>
+        <div class="stat"><div class="stat-value">${avgHours}</div><div class="stat-label">${t('stat_avg_hours')}</div></div>
+        <div class="stat"><div class="stat-value">${years}</div><div class="stat-label">${t('stat_years_active')}</div></div>
     `;
 }
 
@@ -1442,9 +1618,9 @@ function editWeekly(id) {
     if (!g) return;
     editingId = id;
     document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
-    document.getElementById('modalTitle').textContent = 'Weekly Eintrag bearbeiten';
-    document.getElementById('formField2Label').textContent = 'Stunden';
-    document.getElementById('formField3Label').textContent = 'Datum *';
+    document.getElementById('modalTitle').textContent = t('modal_edit_weekly');
+    document.getElementById('formField2Label').textContent = t('modal_hours');
+    document.getElementById('formField3Label').textContent = t('modal_date');
     document.getElementById('formStatusGroup').style.display = 'none';
     document.getElementById('formCategory').style.display = 'none';
     document.getElementById('formDate').style.display = '';
@@ -1471,9 +1647,9 @@ function renderWeekendsStats() {
     const atFirst  = weekendGames.filter(g => g.location === weekendGames.find(x=>x.location)?.location).length;
     const locations = [...new Set(weekendGames.map(g => g.location).filter(Boolean))];
     const statsHtml = `
-        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Weekends</div></div>
-        <div class="stat"><div class="stat-value">${years}</div><div class="stat-label">Jahre</div></div>
-        ${locations.map(loc => `<div class="stat"><div class="stat-value">${weekendGames.filter(g=>g.location===loc).length}</div><div class="stat-label">bei ${escHtml(loc)}</div></div>`).join('')}
+        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">${t('stat_weekends')}</div></div>
+        <div class="stat"><div class="stat-value">${years}</div><div class="stat-label">${t('stat_years')}</div></div>
+        ${locations.map(loc => `<div class="stat"><div class="stat-value">${weekendGames.filter(g=>g.location===loc).length}</div><div class="stat-label">${t('stat_at')} ${escHtml(loc)}</div></div>`).join('')}
     `;
     document.getElementById('stats-weekends').innerHTML = statsHtml;
 }
@@ -1485,7 +1661,7 @@ function renderWeekends() {
     const locSelect = document.getElementById('filterWeekendsLocation');
     const locations = [...new Set(weekendGames.map(g => g.location).filter(Boolean))].sort();
     if (locSelect.options.length !== locations.length + 1) {
-        locSelect.innerHTML = '<option value="">Alle</option>' + locations.map(l => `<option value="${escHtml(l)}"${l===locFilter?' selected':''}>${escHtml(l)}</option>`).join('');
+        locSelect.innerHTML = `<option value="">${t('filter_all')}</option>` + locations.map(l => `<option value="${escHtml(l)}"${l===locFilter?' selected':''}>${escHtml(l)}</option>`).join('');
     }
     let filtered = weekendGames.filter(g => {
         if (search && !g.title.toLowerCase().includes(search) && !(g.special||'').toLowerCase().includes(search)) return false;
@@ -1521,9 +1697,9 @@ function editWeekend(id) {
     if (!g) return;
     editingId = id;
     document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
-    document.getElementById('modalTitle').textContent = 'Weekend Eintrag bearbeiten';
-    document.getElementById('formField2Label').textContent = 'Ort (z.B. Ulf, Falk)';
-    document.getElementById('formField3Label').textContent = 'Datum (z.B. 07.05.–10.05.2026)';
+    document.getElementById('modalTitle').textContent = t('modal_edit_weekend');
+    document.getElementById('formField2Label').textContent = t('th_location');
+    document.getElementById('formField3Label').textContent = t('modal_date');
     document.getElementById('formStatusGroup').style.display = 'none';
     document.getElementById('formCategory').style.display = 'none';
     document.getElementById('formDate').style.display = '';
