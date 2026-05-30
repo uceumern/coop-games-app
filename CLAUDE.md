@@ -48,12 +48,29 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 
 **CSS variables** are defined in `:root` — color scheme derived from a heraldic coat of arms (shield blue `#1a4268`, gold `#c89a18`, silver `#bcd0e0`). Responsive breakpoints at `768px` and `540px`.
 
+## Versioning
+
+The app version is stored as a JS constant at the top of the `<script>` block in `index.html`:
+
+```js
+const APP_VERSION = '1.2.0';
+```
+
+And displayed in the settings panel. **SemVer rules:**
+- `patch` (1.0.x) — bug fixes, copy changes, CSS tweaks
+- `minor` (1.x.0) — new features, new UI sections
+- `major` (x.0.0) — breaking changes to data shape or complete redesigns
+
+**Always update `APP_VERSION` on the feature branch before committing.** Determine the correct increment based on the nature of the change and set it without being asked.
+
+After merging, create a Git tag on `main`: `git tag v1.2.0 && git push --tags`
+
 ## Workflow
 
 **Development process — always in this order:**
 1. **Plan** — outline the approach and discuss with the user
 2. **Approval** — wait for explicit sign-off before writing any code
-3. **Implement** — make changes on a feature branch
+3. **Implement** — make changes on a feature branch (bump `APP_VERSION`)
 4. **Test** — verify locally before committing
 5. **Commit / PR** — only after the user has reviewed and approved
 
