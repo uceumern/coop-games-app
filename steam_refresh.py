@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-steam_refresh.py – Updates Steam data in a Coop Games Tracker Gist
--------------------------------------------------------------------
+steam_refresh.py – Updates Steam data and XGP availability in a Coop Games Tracker Gist
+-----------------------------------------------------------------------------------------
 Fetches the Gist, iterates over all watchlist games with a Steam AppID,
-pulls current price / review score / release status from Steam, and
-writes the updated data back to the Gist.
+pulls current price / review score / release status from Steam, checks
+PC Game Pass availability by name, and writes the updated data back to the Gist.
 
 Requirements: Python 3.10+, requests
   pip install requests
@@ -17,11 +17,15 @@ Usage:
 
   Dry run (fetch + print, no write):
   python steam_refresh.py --dry-run
+
+  Skip XGP check:
+  python steam_refresh.py --skip-xgp
 """
 
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -29,15 +33,21 @@ from datetime import datetime, timezone
 try:
     import requests
 except ImportError:
-    print("requests nicht installiert. Bitte: pip install requests")
+    print("requests not installed. Run: pip install requests")
     sys.exit(1)
 
 
-GIST_API     = "https://api.github.com/gists/{gist_id}"
-DETAILS_URL  = "https://store.steampowered.com/api/appdetails"
-REVIEWS_URL  = "https://store.steampowered.com/appreviews/{appid}"
-GIST_FILE    = "coop_games_data.json"
+GIST_API      = "https://api.github.com/gists/{gist_id}"
+DETAILS_URL   = "https://store.steampowered.com/api/appdetails"
+REVIEWS_URL   = "https://store.steampowered.com/appreviews/{appid}"
+GIST_FILE     = "coop_games_data.json"
 REQUEST_DELAY = 1.2  # seconds between Steam requests
+
+# PC Game Pass catalog (unofficial but stable Microsoft endpoints)
+XGP_SIGL_URL    = "https://catalog.gamepass.com/sigls/v2"
+XGP_CATALOG_URL = "https://displaycatalog.mp.microsoft.com/v7.0/products"
+XGP_SIGL_ID     = "fdd9e2a7-0fee-49f6-ad69-4354098401ff"  # PC Game Pass
+XGP_BATCH_SIZE  = 20
 
 
 # ---------------------------------------------------------------------------
@@ -81,7 +91,7 @@ def steam_details(appid: int) -> dict | None:
         entry = data.get(str(appid), {})
         return entry.get("data") if entry.get("success") else None
     except Exception as e:
-        print(f"    ⚠ Details fehlgeschlagen: {e}", file=sys.stderr)
+        print(f"    ⚠ Steam details failed: {e}", file=sys.stderr)
         return None
 
 
@@ -96,7 +106,7 @@ def steam_reviews(appid: int) -> dict | None:
         data = resp.json()
         return data.get("query_summary") if data.get("success") == 1 else None
     except Exception as e:
-        print(f"    ⚠ Reviews fehlgeschlagen: {e}", file=sys.stderr)
+        print(f"    ⚠ Steam reviews failed: {e}", file=sys.stderr)
         return None
 
 
@@ -141,81 +151,161 @@ def fetch_steam_data(appid: int) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# PC Game Pass catalog
+# ---------------------------------------------------------------------------
+
+def normalize_name(name: str) -> str:
+    """Lowercase, strip punctuation and extra whitespace for name matching."""
+    return re.sub(r'[^a-z0-9 ]', '', name.lower()).strip()
+
+
+def fetch_xgp_catalog() -> set[str]:
+    """
+    Returns a set of normalized game titles currently in PC Game Pass.
+    Uses two Microsoft endpoints:
+      1. catalog.gamepass.com/sigls — list of product IDs
+      2. displaycatalog.mp.microsoft.com — product titles for those IDs
+    """
+    # Step 1: fetch product IDs
+    resp = requests.get(
+        XGP_SIGL_URL,
+        params={"id": XGP_SIGL_ID, "language": "en-us", "market": "US"},
+        timeout=15,
+    )
+    resp.raise_for_status()
+    items = resp.json()
+    ids = [item["id"] for item in items if isinstance(item, dict) and "id" in item]
+    print(f"  {len(ids)} product IDs fetched from Game Pass catalog.")
+
+    # Step 2: batch-fetch product titles
+    titles: set[str] = set()
+    total_batches = (len(ids) + XGP_BATCH_SIZE - 1) // XGP_BATCH_SIZE
+    for i in range(0, len(ids), XGP_BATCH_SIZE):
+        batch = ids[i:i + XGP_BATCH_SIZE]
+        batch_num = i // XGP_BATCH_SIZE + 1
+        try:
+            r = requests.get(
+                XGP_CATALOG_URL,
+                params={
+                    "bigIds": ",".join(batch),
+                    "market": "US",
+                    "languages": "en-us",
+                    "MS-CV": "DGU1mcuYo0WMMp.1",
+                },
+                timeout=15,
+            )
+            r.raise_for_status()
+            for product in r.json().get("Products", []):
+                for lp in product.get("LocalizedProperties", []):
+                    title = lp.get("ProductTitle", "").strip()
+                    if title:
+                        titles.add(normalize_name(title))
+                        break
+        except Exception as e:
+            print(f"  ⚠ Batch {batch_num}/{total_batches} failed: {e}", file=sys.stderr)
+        time.sleep(0.3)
+
+    return titles
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
     global REQUEST_DELAY
 
-    parser = argparse.ArgumentParser(description="Steam-Daten im Coop Games Gist aktualisieren")
-    parser.add_argument("--gist-id", default=os.environ.get("GIST_ID"), help="GitHub Gist ID")
-    parser.add_argument("--pat",     default=os.environ.get("GITHUB_PAT"), help="GitHub Personal Access Token (gist scope)")
-    parser.add_argument("--dry-run", action="store_true", help="Nur anzeigen, nicht schreiben")
-    parser.add_argument("--delay",   type=float, default=REQUEST_DELAY, help="Sekunden zwischen Steam-Requests")
+    parser = argparse.ArgumentParser(description="Update Steam data and XGP availability in Coop Games Gist")
+    parser.add_argument("--gist-id",  default=os.environ.get("GIST_ID"),     help="GitHub Gist ID")
+    parser.add_argument("--pat",      default=os.environ.get("GITHUB_PAT"),  help="GitHub Personal Access Token (gist scope)")
+    parser.add_argument("--dry-run",  action="store_true", help="Fetch and print, do not write back to Gist")
+    parser.add_argument("--skip-xgp", action="store_true", help="Skip PC Game Pass availability check")
+    parser.add_argument("--delay",    type=float, default=REQUEST_DELAY,     help="Seconds between Steam API requests (default: 1.2)")
     args = parser.parse_args()
 
     REQUEST_DELAY = args.delay
 
     if not args.gist_id or not args.pat:
-        print("Fehler: --gist-id und --pat (oder GIST_ID / GITHUB_PAT Umgebungsvariablen) erforderlich.")
+        print("Error: --gist-id and --pat (or GIST_ID / GITHUB_PAT env vars) are required.")
         sys.exit(1)
 
-    # --- Gist holen ---
-    print(f"Hole Gist {args.gist_id}...")
+    # --- Fetch Gist ---
+    print(f"Fetching Gist {args.gist_id}...")
     gist = gist_get(args.gist_id, args.pat)
     raw = gist.get("files", {}).get(GIST_FILE, {}).get("content")
     if not raw:
-        print(f"Fehler: '{GIST_FILE}' nicht im Gist gefunden.")
+        print(f"Error: '{GIST_FILE}' not found in Gist.")
         sys.exit(1)
 
     data = json.loads(raw)
     watchlist = data.get("watchlist", [])
-
     games_with_appid = [g for g in watchlist if g.get("appid")]
-    print(f"{len(watchlist)} Spiele im Gist, {len(games_with_appid)} mit Steam AppID.\n")
+    print(f"{len(watchlist)} games in Gist, {len(games_with_appid)} with Steam AppID.\n")
 
-    # --- Steam-Daten abrufen ---
+    # --- Fetch PC Game Pass catalog ---
+    xgp_titles: set[str] = set()
+    if not args.skip_xgp:
+        print("Fetching PC Game Pass catalog...")
+        try:
+            xgp_titles = fetch_xgp_catalog()
+            print(f"  {len(xgp_titles)} titles in PC Game Pass.\n")
+        except Exception as e:
+            print(f"⚠ Could not load XGP catalog: {e} — skipping XGP check.\n", file=sys.stderr)
+
+    # --- Fetch Steam data and check XGP ---
     updated = 0
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     for i, game in enumerate(watchlist, 1):
         appid = game.get("appid")
-        if not appid:
-            print(f"[{i}/{len(watchlist)}] {game.get('name', '?')} – kein AppID, übersprungen")
-            continue
-
-        print(f"[{i}/{len(watchlist)}] {game['name']} (AppID {appid})...", end=" ", flush=True)
-
-        steam = fetch_steam_data(int(appid))
-
+        name  = game.get("name", "?")
         changes = []
-        for key in ("steam_status", "price", "review_pct", "review_count"):
-            if steam[key] is not None and game.get(key) != steam[key]:
-                game[key] = steam[key]
-                changes.append(key)
 
-        game["steam_updated"] = timestamp
-        updated += 1
+        if appid:
+            print(f"[{i}/{len(watchlist)}] {name} (AppID {appid})...", end=" ", flush=True)
 
-        status_str = steam["steam_status"]
-        review_str = f"{steam['review_pct']}%" if steam["review_pct"] else "—"
-        price_str  = steam["price"] or "—"
-        print(f"{status_str} | {price_str} | {review_str}" + (f" ({', '.join(changes)} geändert)" if changes else ""))
+            steam = fetch_steam_data(int(appid))
 
-    print(f"\n{updated} Spiele abgefragt.")
+            for key in ("steam_status", "price", "review_pct", "review_count"):
+                if steam[key] is not None and game.get(key) != steam[key]:
+                    game[key] = steam[key]
+                    changes.append(key)
+
+            game["steam_updated"] = timestamp
+            updated += 1
+
+            status_str = steam["steam_status"]
+            review_str = f"{steam['review_pct']}%" if steam["review_pct"] else "—"
+            price_str  = steam["price"] or "—"
+            suffix     = f"{status_str} | {price_str} | {review_str}"
+        else:
+            print(f"[{i}/{len(watchlist)}] {name} (no AppID)...", end=" ", flush=True)
+            suffix = "no Steam data"
+
+        # XGP check — works for all games regardless of AppID
+        if xgp_titles:
+            is_xgp = normalize_name(name) in xgp_titles
+            if game.get("xgp") != is_xgp:
+                game["xgp"] = is_xgp
+                changes.append("xgp+" if is_xgp else "xgp-")
+
+        xgp_str = " [XGP]" if game.get("xgp") else ""
+        print(f"{suffix}{xgp_str}" + (f" ({', '.join(changes)} changed)" if changes else ""))
+
+    print(f"\n{updated} games processed.")
 
     if args.dry_run:
-        print("Dry-run: Gist wird nicht aktualisiert.")
+        print("Dry-run: Gist not updated.")
         return
 
-    # --- Metadaten aktualisieren ---
+    # --- Update metadata ---
     data["lastModified"]   = timestamp
     data["lastModifiedBy"] = "steam_refresh"
 
-    # --- Gist aktualisieren ---
-    print("Schreibe Gist...")
+    # --- Write Gist ---
+    print("Writing Gist...")
     gist_patch(args.gist_id, args.pat, json.dumps(data, ensure_ascii=False, indent=2))
-    print(f"✅ Gist aktualisiert ({timestamp})")
+    print(f"✅ Gist updated ({timestamp})")
 
 
 if __name__ == "__main__":

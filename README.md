@@ -47,4 +47,7 @@ The script fetches the Gist, queries the Steam API for each game with a known Ap
 
 Options:
 - `--dry-run` — fetch and print without writing back to the Gist
+- `--skip-xgp` — skip the PC Game Pass availability check
 - `--delay` — seconds between Steam API requests (default: 1.2)
+
+The script also checks PC Game Pass availability via the Microsoft catalog API (name matching). Games found in the catalog have their `xgp` field set to `true` in the Gist, which shows a Game Pass badge in the app.
