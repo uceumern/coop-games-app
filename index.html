@@ -822,7 +822,7 @@ a:hover { text-decoration: underline; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -1415,6 +1415,9 @@ function renderGames() {
         const steamLink  = game.appid
             ? `<a href="https://store.steampowered.com/app/${game.appid}" target="_blank">${escHtml(game.name)}</a>`
             : escHtml(game.name);
+        const noAppIdIcon = !game.appid
+            ? `<i class="bi bi-question-circle" style="color:var(--text-dim);font-size:0.8em;margin-right:0.35em" title="No Steam App ID set"></i>`
+            : '';
         const notesHtml  = game.notes ? `<br><small style="color:var(--text-dim)">${escHtml(game.notes)}</small>` : '';
         const addedHtml  = game.added ? new Date(game.added).toLocaleDateString('de-DE') : '—';
         const platforms  = [];
@@ -1423,7 +1426,7 @@ function renderGames() {
         if (game.platform === 'gog')  platforms.push(`<span class="badge badge-gog">${t('platform_gog')}</span>`);
         const platformHtml = platforms.join(' ') || '';
         return `<tr>
-            <td>${steamLink}${notesHtml}</td>
+            <td>${noAppIdIcon}${steamLink}${notesHtml}</td>
             <td><small>${catLabel}</small></td>
             <td><span class="badge ${statusInfo.class} badge-clickable" onclick="cycleStatus('${game.id}')" title="Klicken zum Ändern">${statusLabel}</span></td>
             <td>${platformHtml}</td>
