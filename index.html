@@ -842,6 +842,7 @@ const STRINGS = {
     toast_imported: 'Daten importiert', toast_status_prefix: 'Status: ',
     sync_connecting: 'Verbinde...', sync_loading: 'Lade...', sync_syncing: 'Synchronisiere...',
     sync_synced: 'Synchronisiert', sync_error: 'Fehler', sync_offline: 'Nicht konfiguriert',
+    sync_just_now: 'gerade eben', sync_minutes: 'Min.', sync_hours: 'Std.', sync_days: 'Tage',
   },
   en: {
     btn_add: 'Add',
@@ -891,6 +892,7 @@ const STRINGS = {
     toast_imported: 'Data imported', toast_status_prefix: 'Status: ',
     sync_connecting: 'Connecting...', sync_loading: 'Loading...', sync_syncing: 'Syncing...',
     sync_synced: 'Synced', sync_error: 'Error', sync_offline: 'Not configured',
+    sync_just_now: 'just now', sync_minutes: 'min', sync_hours: 'hrs', sync_days: 'days',
   }
 };
 
@@ -964,6 +966,33 @@ function loadLang() {
   const sel = document.getElementById('settingLang');
   if (sel) sel.value = localStorage.getItem(LANG_KEY) || 'auto';
   applyI18n();
+}
+
+// ==================== RELATIVE AGE ====================
+let _lastSyncedAt  = null;
+let _syncAgeTimer  = null;
+
+function relativeAge(isoStr) {
+  if (!isoStr) return '';
+  const secs = Math.floor((Date.now() - new Date(isoStr)) / 1000);
+  if (secs < 60)  return t('sync_just_now');
+  const mins = Math.floor(secs / 60);
+  if (mins < 60)  return `${mins} ${t('sync_minutes')}`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} ${t('sync_hours')}`;
+  return `${Math.floor(hours / 24)} ${t('sync_days')}`;
+}
+
+function _refreshSyncAge() {
+  if (!_lastSyncedAt) return;
+  const header = document.getElementById('headerSyncStatus');
+  if (header) header.innerHTML = `<i class="bi bi-cloud-check" style="color:rgba(255,255,255,0.5)"></i> ${relativeAge(_lastSyncedAt)}`;
+}
+
+function _startSyncAgeTimer(isoStr) {
+  _lastSyncedAt = isoStr;
+  if (_syncAgeTimer) clearInterval(_syncAgeTimer);
+  _syncAgeTimer = setInterval(_refreshSyncAge, 30000);
 }
 
 function applyTheme(theme) {
@@ -1165,7 +1194,8 @@ function setSyncStatus(state, lastModified, user, error) {
         case 'synced': {
             const time = lastModified ? new Date(lastModified).toLocaleString('de-DE') : '';
             settingsHtml = `<span style="color:var(--green)"><i class="bi bi-cloud-check"></i> ${t('sync_synced')}</span>${time ? ` (${time}${user ? ', ' + user : ''})` : ''}`;
-            headerHtml   = `<i class="bi bi-cloud-check" style="color:rgba(255,255,255,0.5)"></i> ${time ? time.split(', ')[1] || time : ''}`;
+            headerHtml   = `<i class="bi bi-cloud-check" style="color:rgba(255,255,255,0.5)"></i> ${relativeAge(lastModified)}`;
+            _startSyncAgeTimer(lastModified);
             break;
         }
         case 'error':
