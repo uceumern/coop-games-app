@@ -198,6 +198,11 @@ a:hover { text-decoration: underline; }
     border-bottom: none;
 }
 .game-table th:hover { background: var(--primary-light); }
+/* Steam column group — separator only, no header background change */
+.game-table th.col-steam-first, .game-table td.col-steam-first { border-left: 3px solid var(--accent); }
+.game-table td.col-steam { background: rgba(200,154,24,0.05); }
+.dark .game-table td.col-steam { background: rgba(212,168,32,0.06); }
+@media (prefers-color-scheme: dark) { :root:not(.light) .game-table td.col-steam { background: rgba(212,168,32,0.06); } }
 .game-table th .sort-arrow { margin-left: 0.25rem; font-size: 0.65rem; opacity: 0.8; }
 .game-table td {
     padding: 0.55rem 0.6rem;
@@ -247,6 +252,9 @@ a:hover { text-decoration: underline; }
 .badge-obsolete { background: #b8cede; color: #253a50; }
 .badge-wait-ea { background: #f5dfa0; color: #5a3c00; }
 .badge-candidate { background: #a8c8e8; color: #0a2848; }
+.badge-xgp { background: #107c10; color: #fff; }
+.badge-epic { background: #2a2a2a; color: #fff; }
+.badge-gog { background: #8b4513; color: #fff; }
 /* Dark mode badge overrides */
 .dark .badge-released, @media (prefers-color-scheme: dark) { :root:not(.light) .badge-released { background: #1a4a2a; color: #7ddfa0; } }
 .dark .badge-released { background: #1a4a2a; color: #7ddfa0; }
@@ -258,6 +266,9 @@ a:hover { text-decoration: underline; }
 .dark .badge-obsolete { background: #1a3448; color: #8ab8d8; }
 .dark .badge-wait-ea { background: #4a3800; color: #f5c842; }
 .dark .badge-candidate { background: #0a2848; color: #7ab8e8; }
+.dark .badge-xgp { background: #0a5a0a; color: #7ddf7d; }
+.dark .badge-epic { background: #1a1a1a; color: #c8c8c8; }
+.dark .badge-gog { background: #5a2a0a; color: #e8a878; }
 @media (prefers-color-scheme: dark) {
     :root:not(.light) .badge-released { background: #1a4a2a; color: #7ddfa0; }
     :root:not(.light) .badge-ea { background: #4a3800; color: #f5c842; }
@@ -268,6 +279,9 @@ a:hover { text-decoration: underline; }
     :root:not(.light) .badge-obsolete { background: #1a3448; color: #8ab8d8; }
     :root:not(.light) .badge-wait-ea { background: #4a3800; color: #f5c842; }
     :root:not(.light) .badge-candidate { background: #0a2848; color: #7ab8e8; }
+    :root:not(.light) .badge-xgp { background: #0a5a0a; color: #7ddf7d; }
+    :root:not(.light) .badge-epic { background: #1a1a1a; color: #c8c8c8; }
+    :root:not(.light) .badge-gog { background: #5a2a0a; color: #e8a878; }
 }
 
 .review-bar { display: flex; align-items: center; gap: 0.4rem; }
@@ -448,25 +462,28 @@ a:hover { text-decoration: underline; }
 
 /* Portrait mobile: column hiding + touch targets */
 @media (max-width: 540px) and (orientation: portrait) {
-    /* Watchlist: keep Spiel, User Status, Aktionen — hide rest */
+    /* Watchlist: keep Game (1), Status (3), Actions (10) — hide rest */
     #gameTableBody tr td:nth-child(2),
-    #gameTableBody tr td:nth-child(3),
+    #gameTableBody tr td:nth-child(4),
     #gameTableBody tr td:nth-child(5),
     #gameTableBody tr td:nth-child(6),
     #gameTableBody tr td:nth-child(7),
-    #gameTableBody tr td:nth-child(8) { display: none; }
+    #gameTableBody tr td:nth-child(8),
+    #gameTableBody tr td:nth-child(9) { display: none; }
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(2),
-    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(3),
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(4),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(5),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(6),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(7),
-    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(8) { display: none; }
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(8),
+    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(9) { display: none; }
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(2),
-    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(3),
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(4),
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(5),
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(6),
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(7),
-    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(8) { display: none; }
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(8),
+    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(9) { display: none; }
 
     /* Weekly: keep Datum, Titel, Fazit, Aktionen — hide Stunden, Bemerkung */
     #weeklyTableBody tr td:nth-child(3),
@@ -621,8 +638,9 @@ a:hover { text-decoration: underline; }
             <tr>
                 <th onclick="sortByColumn('name')" id="th-name"><span data-i18n="th_game">Spiel</span> <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('category')" id="th-category"><span data-i18n="th_category">Kategorie</span> <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('steam_status')" id="th-steam_status"><span data-i18n="th_steam_status">Steam Status</span> <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('user_status')" id="th-user_status"><span data-i18n="th_user_status">User Status</span> <span class="sort-arrow"></span></th>
+                <th id="th-platform"><span data-i18n="th_platform">Plattform</span></th>
+                <th onclick="sortByColumn('steam_status')" id="th-steam_status" class="col-steam-first"><span data-i18n="th_steam_status">Steam Status</span> <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('price')" id="th-price"><span data-i18n="th_price">Preis</span> <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('review_pct')" id="th-review_pct"><span data-i18n="th_rating">Bewertung</span> <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('review_count')" id="th-review_count"><span data-i18n="th_reviews">Reviews</span> <span class="sort-arrow"></span></th>
@@ -646,15 +664,6 @@ a:hover { text-decoration: underline; }
                     </select>
                 </th>
                 <th>
-                    <select id="filterSteamStatus" onchange="renderGames()">
-                        <option value="">Alle</option>
-                        <option value="released">Released</option>
-                        <option value="ea">Early Access</option>
-                        <option value="unreleased">Unreleased</option>
-                        <option value="unknown">Unbekannt</option>
-                    </select>
-                </th>
-                <th>
                     <select id="filterUserStatus" onchange="renderGames()">
                         <option value="">Alle</option>
                         <option value="candidate">Kandidat</option>
@@ -662,6 +671,21 @@ a:hover { text-decoration: underline; }
                         <option value="wait-ea">Warte EA</option>
                         <option value="abandoned">Abgebrochen</option>
                         <option value="obsolete">Aussortiert</option>
+                    </select>
+                </th>
+                <th>
+                    <select id="filterPlatform" onchange="renderGames()">
+                        <option value="">Alle</option>
+                        <option value="xgp">Nur Game Pass</option>
+                    </select>
+                </th>
+                <th class="col-steam-first">
+                    <select id="filterSteamStatus" onchange="renderGames()">
+                        <option value="">Alle</option>
+                        <option value="released">Released</option>
+                        <option value="ea">Early Access</option>
+                        <option value="unreleased">Unreleased</option>
+                        <option value="unknown">Unbekannt</option>
                     </select>
                 </th>
                 <th></th>
@@ -767,6 +791,20 @@ a:hover { text-decoration: underline; }
             <label data-i18n="modal_status">Status</label>
             <select id="formStatus"></select>
         </div>
+        <div class="form-group" id="formPlatformGroup">
+            <label data-i18n="modal_platform">Plattform / Verfügbarkeit</label>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.3rem">
+                <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;color:var(--text);font-weight:normal">
+                    <input type="checkbox" id="formPlatformXgp"> <span data-i18n="modal_platform_xgp">Xbox / PC Game Pass</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;color:var(--text);font-weight:normal">
+                    <input type="checkbox" id="formPlatformEpic"> <span data-i18n="modal_platform_epic">Epic Games Store</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;color:var(--text);font-weight:normal">
+                    <input type="checkbox" id="formPlatformGog"> <span data-i18n="modal_platform_gog">GOG</span>
+                </label>
+            </div>
+        </div>
         <div class="form-group">
             <label data-i18n="modal_notes">Notizen</label>
             <input type="text" id="formNotes" data-i18n-ph="modal_notes_placeholder" placeholder="Optionale Notizen...">
@@ -783,7 +821,7 @@ a:hover { text-decoration: underline; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.1.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -847,6 +885,13 @@ const STRINGS = {
     sync_connecting: 'Verbinde...', sync_loading: 'Lade...', sync_syncing: 'Synchronisiere...',
     sync_synced: 'Synchronisiert', sync_error: 'Fehler', sync_offline: 'Nicht konfiguriert',
     sync_just_now: 'gerade eben', sync_minutes: 'Min.', sync_hours: 'Std.', sync_days: 'Tage',
+    th_platform: 'Plattform',
+    platform_xgp: 'Game Pass', platform_epic: 'Epic', platform_gog: 'GOG',
+    filter_platform_all: 'Alle', filter_xgp_only: 'Nur Game Pass',
+    modal_platform: 'Plattform / Verfügbarkeit',
+    modal_platform_xgp: 'Xbox / PC Game Pass',
+    modal_platform_epic: 'Epic Games Store',
+    modal_platform_gog: 'GOG',
   },
   en: {
     btn_add: 'Add',
@@ -897,6 +942,13 @@ const STRINGS = {
     sync_connecting: 'Connecting...', sync_loading: 'Loading...', sync_syncing: 'Syncing...',
     sync_synced: 'Synced', sync_error: 'Error', sync_offline: 'Not configured',
     sync_just_now: 'just now', sync_minutes: 'min', sync_hours: 'hrs', sync_days: 'days',
+    th_platform: 'Platform',
+    platform_xgp: 'Game Pass', platform_epic: 'Epic', platform_gog: 'GOG',
+    filter_platform_all: 'All', filter_xgp_only: 'Game Pass only',
+    modal_platform: 'Platform / Availability',
+    modal_platform_xgp: 'Xbox / PC Game Pass',
+    modal_platform_epic: 'Epic Games Store',
+    modal_platform_gog: 'GOG',
   }
 };
 
@@ -945,6 +997,11 @@ function _rebuildSelects() {
 
   const filterStatus = document.getElementById('filterUserStatus');
   if (filterStatus) { const v = filterStatus.value; filterStatus.innerHTML = `<option value="">${t('filter_all')}</option>${statusOptions()}`; filterStatus.value = v; }
+
+  const filterPlat = document.getElementById('filterPlatform');
+  if (filterPlat) { const v = filterPlat.value; filterPlat.innerHTML = `
+    <option value="">${t('filter_platform_all')}</option>
+    <option value="xgp">${t('filter_xgp_only')}</option>`; filterPlat.value = v; }
 
   const formCat = document.getElementById('formCategory');
   if (formCat) { const v = formCat.value; formCat.innerHTML = catOptions(); formCat.value = v; }
@@ -1300,6 +1357,7 @@ function renderGames() {
     const catFilter    = document.getElementById('filterCategory')?.value || '';
     const steamFilter  = document.getElementById('filterSteamStatus')?.value || '';
     const statusFilter = document.getElementById('filterUserStatus')?.value || '';
+    const platFilter   = document.getElementById('filterPlatform')?.value || '';
     const showAdded    = true;
 
     let filtered = games.filter(g => {
@@ -1307,6 +1365,7 @@ function renderGames() {
         if (catFilter    && g.category !== catFilter) return false;
         if (steamFilter  && (g.steam?.steam_status || 'unknown') !== steamFilter) return false;
         if (statusFilter && g.status !== statusFilter) return false;
+        if (platFilter === 'xgp' && !g.xgp) return false;
         if (search && !g.name.toLowerCase().includes(search) && !(g.notes||'').toLowerCase().includes(search)) return false;
         return true;
     });
@@ -1355,15 +1414,20 @@ function renderGames() {
             : escHtml(game.name);
         const notesHtml  = game.notes ? `<br><small style="color:var(--text-dim)">${escHtml(game.notes)}</small>` : '';
         const addedHtml  = game.added ? new Date(game.added).toLocaleDateString('de-DE') : '—';
-        const showAdded  = document.getElementById('toggleAddedCol')?.checked;
+        const platforms  = [];
+        if (game.xgp)      platforms.push(`<span class="badge badge-xgp"><i class="bi bi-microsoft"></i> ${t('platform_xgp')}</span>`);
+        if (game.platform === 'epic') platforms.push(`<span class="badge badge-epic">${t('platform_epic')}</span>`);
+        if (game.platform === 'gog')  platforms.push(`<span class="badge badge-gog">${t('platform_gog')}</span>`);
+        const platformHtml = platforms.join(' ') || '';
         return `<tr>
             <td>${steamLink}${notesHtml}</td>
             <td><small>${catLabel}</small></td>
-            <td><span class="badge ${steamStatusInfo.class}">${steamLabel}</span></td>
             <td><span class="badge ${statusInfo.class} badge-clickable" onclick="cycleStatus('${game.id}')" title="Klicken zum Ändern">${statusLabel}</span></td>
-            <td>${steam.price || '—'}</td>
-            <td>${reviewHtml}</td>
-            <td>${countHtml}</td>
+            <td>${platformHtml}</td>
+            <td class="col-steam col-steam-first"><span class="badge ${steamStatusInfo.class}">${steamLabel}</span></td>
+            <td class="col-steam">${steam.price || '—'}</td>
+            <td class="col-steam">${reviewHtml}</td>
+            <td class="col-steam">${countHtml}</td>
             <td class="col-added" style="font-size:0.78rem;color:var(--text-dim)">${addedHtml}</td>
             <td>
                 <button class="btn btn-sm" onclick="openEditModal('${game.id}')" title="Bearbeiten"><i class="bi bi-pencil"></i></button>
@@ -1435,6 +1499,7 @@ function openAddModal() {
         document.getElementById('formField2Label').textContent = t('modal_hours');
         document.getElementById('formField3Label').textContent = t('modal_date');
         document.getElementById('formStatusGroup').style.display = 'none';
+        document.getElementById('formPlatformGroup').style.display = 'none';
         document.getElementById('formCategory').style.display = 'none';
         document.getElementById('formDate').style.display = '';
         document.getElementById('formDate').value = new Date().toISOString().slice(0,7).replace('-','/');
@@ -1446,6 +1511,7 @@ function openAddModal() {
         document.getElementById('formField2Label').textContent = t('th_location');
         document.getElementById('formField3Label').textContent = t('modal_date');
         document.getElementById('formStatusGroup').style.display = 'none';
+        document.getElementById('formPlatformGroup').style.display = 'none';
         document.getElementById('formCategory').style.display = 'none';
         document.getElementById('formDate').style.display = '';
         document.getElementById('formDate').value = '';
@@ -1463,6 +1529,9 @@ function openAddModal() {
         document.getElementById('formName').value = '';
         document.getElementById('formAppId').value = '';
         document.getElementById('formNotes').value = '';
+        document.getElementById('formPlatformXgp').checked = false;
+        document.getElementById('formPlatformEpic').checked = false;
+        document.getElementById('formPlatformGog').checked = false;
     }
     modal.classList.add('active');
 }
@@ -1484,6 +1553,9 @@ function openEditModal(id) {
     document.getElementById('formCategory').value = game.category;
     document.getElementById('formStatus').value = game.status;
     document.getElementById('formNotes').value = game.notes || '';
+    document.getElementById('formPlatformXgp').checked  = !!game.xgp;
+    document.getElementById('formPlatformEpic').checked = game.platform === 'epic';
+    document.getElementById('formPlatformGog').checked  = game.platform === 'gog';
     modal.classList.add('active');
 }
 
@@ -1539,11 +1611,15 @@ function saveGame() {
     const category = document.getElementById('formCategory').value;
     const status   = document.getElementById('formStatus').value;
     const notes    = document.getElementById('formNotes').value.trim();
+    const xgp      = document.getElementById('formPlatformXgp').checked;
+    const platform = document.getElementById('formPlatformEpic').checked ? 'epic'
+                   : document.getElementById('formPlatformGog').checked  ? 'gog'
+                   : 'steam';
     if (editingId) {
         const game = games.find(g => g.id === editingId);
-        if (game) { game.name = name; game.appid = appid; game.category = category; game.status = status; game.notes = notes; }
+        if (game) { game.name = name; game.appid = appid; game.category = category; game.status = status; game.notes = notes; game.xgp = xgp; game.platform = platform; }
     } else {
-        games.push({ id: crypto.randomUUID(), name, appid, category, status, notes,
+        games.push({ id: crypto.randomUUID(), name, appid, category, status, notes, xgp, platform,
             added: new Date().toISOString(),
             steam: { price: '', review_pct: null, review_count: 0, steam_status: 'unknown', release_date: '', is_ea: false }
         });
