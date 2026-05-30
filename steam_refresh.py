@@ -266,12 +266,17 @@ def main():
 
             steam = fetch_steam_data(int(appid))
 
+            steam_obj = game.setdefault("steam", {})
             for key in ("steam_status", "price", "review_pct", "review_count"):
-                if steam[key] is not None and game.get(key) != steam[key]:
-                    game[key] = steam[key]
+                if steam[key] is not None and steam_obj.get(key) != steam[key]:
+                    steam_obj[key] = steam[key]
                     changes.append(key)
 
-            game["steam_updated"] = timestamp
+            steam_obj["steam_updated"] = timestamp
+
+            # Migrate: remove legacy flat top-level Steam fields if present
+            for key in ("steam_status", "price", "review_pct", "review_count", "steam_updated"):
+                game.pop(key, None)
             updated += 1
 
             status_str = steam["steam_status"]
