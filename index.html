@@ -725,10 +725,13 @@ a:hover { text-decoration: underline; }
                 <th></th>
                 <th>
                     <select id="filterWeeklyRating" onchange="renderWeekly()">
-                        <option value="">Alle</option>
-                        <option value="top">Top</option>
-                        <option value="ok">OK</option>
-                        <option value="flop">Flop</option>
+                        <option value="" data-i18n="filter_all">Alle</option>
+                        <option value="5">5</option>
+                        <option value="4">4</option>
+                        <option value="3">3</option>
+                        <option value="2">2</option>
+                        <option value="1">1</option>
+                        <option value="none" data-i18n="filter_none">Keinen</option>
                     </select>
                 </th>
                 <th></th>
@@ -806,6 +809,17 @@ a:hover { text-decoration: underline; }
             </div>
             <small data-i18n="modal_platform_hint"></small>
         </div>
+        <div class="form-group" id="formRatingGroup" style="display:none">
+            <label data-i18n="modal_verdict">Fazit</label>
+            <select id="formRating">
+                <option value="" data-i18n="modal_verdict_none">— kein Rating —</option>
+                <option value="5" data-i18n="modal_verdict_5">5 – Highlight</option>
+                <option value="4" data-i18n="modal_verdict_4">4 – Stark</option>
+                <option value="3" data-i18n="modal_verdict_3">3 – Solide</option>
+                <option value="2" data-i18n="modal_verdict_2">2 – Schwach</option>
+                <option value="1" data-i18n="modal_verdict_1">1 – Reinfall</option>
+            </select>
+        </div>
         <div class="form-group">
             <label data-i18n="modal_notes">Notizen</label>
             <input type="text" id="formNotes" data-i18n-ph="modal_notes_placeholder" placeholder="Optionale Notizen...">
@@ -822,7 +836,7 @@ a:hover { text-decoration: underline; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -859,7 +873,7 @@ const STRINGS = {
     th_reviews: 'Reviews', th_added: 'Hinzugefügt', th_actions: 'Aktionen',
     th_date: 'Datum', th_title: 'Titel', th_hours: 'Stunden',
     th_verdict: 'Fazit', th_notes: 'Bemerkung', th_location: 'Ort', th_special: 'Sonderaktion',
-    filter_all: 'Alle', filter_search: 'Suche...',
+    filter_all: 'Alle', filter_none: 'Ohne', filter_search: 'Suche...',
     cat_vierer: 'Vierer-Runde', cat_hauptliste: 'Hauptliste', cat_neue: 'Neue Spiele',
     cat_top10: 'Top 10', cat_taktik: 'Taktik / Shooter', cat_replay: 'Replay',
     cat_maybe: 'Maybe', cat_earlyaccess: 'Early Access', cat_aeltere: 'Ältere Einträge',
@@ -875,6 +889,9 @@ const STRINGS = {
     modal_add_weekend: 'Coop Weekend hinzufügen', modal_edit_weekend: 'Coop Weekend bearbeiten',
     modal_name: 'Name *', modal_appid: 'Steam AppID (optional)', modal_hours: 'Stunden',
     modal_date: 'Datum *', modal_status: 'Status', modal_notes: 'Notizen',
+    modal_verdict: 'Fazit', modal_verdict_none: '— kein Rating —',
+    modal_verdict_5: '5 – Highlight', modal_verdict_4: '4 – Stark', modal_verdict_3: '3 – Solide', modal_verdict_2: '2 – Schwach', modal_verdict_1: '1 – Reinfall',
+    rating_5: 'Highlight', rating_4: 'Stark', rating_3: 'Solide', rating_2: 'Schwach', rating_1: 'Reinfall',
     modal_notes_placeholder: 'Optionale Notizen...', modal_cancel: 'Abbrechen', modal_save: 'Speichern',
     config_title: 'Konfiguration erforderlich',
     config_text: 'Bitte Gist-ID und Personal Access Token in den Einstellungen hinterlegen, um fortzufahren.',
@@ -917,7 +934,7 @@ const STRINGS = {
     th_reviews: 'Reviews', th_added: 'Added', th_actions: 'Actions',
     th_date: 'Date', th_title: 'Title', th_hours: 'Hours',
     th_verdict: 'Verdict', th_notes: 'Notes', th_location: 'Location', th_special: 'Special',
-    filter_all: 'All', filter_search: 'Search...',
+    filter_all: 'All', filter_none: 'None', filter_search: 'Search...',
     cat_vierer: 'Four-Player', cat_hauptliste: 'Main List', cat_neue: 'New Games',
     cat_top10: 'Top 10', cat_taktik: 'Tactics / Shooter', cat_replay: 'Replay',
     cat_maybe: 'Maybe', cat_earlyaccess: 'Early Access', cat_aeltere: 'Older Entries',
@@ -933,6 +950,9 @@ const STRINGS = {
     modal_add_weekend: 'Add Coop Weekend', modal_edit_weekend: 'Edit Coop Weekend',
     modal_name: 'Name *', modal_appid: 'Steam AppID (optional)', modal_hours: 'Hours',
     modal_date: 'Date *', modal_status: 'Status', modal_notes: 'Notes',
+    modal_verdict: 'Verdict', modal_verdict_none: '— no rating —',
+    modal_verdict_5: '5 – Highlight', modal_verdict_4: '4 – Strong', modal_verdict_3: '3 – Solid', modal_verdict_2: '2 – Weak', modal_verdict_1: '1 – Flop',
+    rating_5: 'Highlight', rating_4: 'Strong', rating_3: 'Solid', rating_2: 'Weak', rating_1: 'Flop',
     modal_notes_placeholder: 'Optional notes...', modal_cancel: 'Cancel', modal_save: 'Save',
     config_title: 'Configuration required',
     config_text: 'Please enter your Gist ID and Personal Access Token in settings to continue.',
@@ -1212,7 +1232,6 @@ async function syncFromGist() {
         if (data.watchlist)  { games        = data.watchlist;  localStorage.setItem(STORAGE_KEY, JSON.stringify(games)); }
         if (data.weekly)     { weeklyGames  = data.weekly;     localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); }
         if (data.weekends)   { weekendGames = data.weekends;   localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); }
-
         // Hide config prompt, re-render
         document.getElementById('configPrompt').style.display = 'none';
         renderAll();
@@ -1296,6 +1315,7 @@ function saveLocal() {
 function saveGames()   { saveLocal(); syncToGist(); }
 function saveWeekly()  { localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); syncToGist(); }
 function saveWeekends(){ localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); syncToGist(); }
+
 
 // ==================== INIT ====================
 function init() {
@@ -1507,10 +1527,12 @@ function openAddModal() {
         document.getElementById('formStatusGroup').style.display = 'none';
         document.getElementById('formPlatformGroup').style.display = 'none';
         document.getElementById('formCategory').style.display = 'none';
+        document.getElementById('formRatingGroup').style.display = '';
         document.getElementById('formDate').style.display = '';
         document.getElementById('formDate').value = new Date().toISOString().slice(0,7).replace('-','/');
         document.getElementById('formName').value = '';
         document.getElementById('formAppId').value = '';
+        document.getElementById('formRating').value = '';
         document.getElementById('formNotes').value = '';
     } else if (activeView === 'weekends') {
         document.getElementById('modalTitle').textContent = t('modal_add_weekend');
@@ -1581,14 +1603,15 @@ function saveGame() {
     if (!name) { toast('Name ist Pflichtfeld'); return; }
 
     if (mode === 'weekly') {
-        const hours = parseFloat(document.getElementById('formAppId').value) || null;
-        const notes = document.getElementById('formNotes').value.trim();
-        const date  = document.getElementById('formDate').value.trim() || new Date().toISOString().slice(0,7).replace('-','/');
+        const hours  = parseFloat(document.getElementById('formAppId').value) || null;
+        const rating = parseInt(document.getElementById('formRating').value) || null;
+        const notes  = document.getElementById('formNotes').value.trim();
+        const date   = document.getElementById('formDate').value.trim() || new Date().toISOString().slice(0,7).replace('-','/');
         if (editingId) {
             const w = weeklyGames.find(g => g.id === editingId);
-            if (w) { w.title = name; w.hours = hours; w.notes = notes; w.date = date; }
+            if (w) { w.title = name; w.hours = hours; w.rating = rating; w.notes = notes; w.date = date; }
         } else {
-            weeklyGames.push({ id: crypto.randomUUID(), date, title: name, hours, notes });
+            weeklyGames.push({ id: crypto.randomUUID(), date, title: name, hours, rating, notes });
         }
         saveWeekly(); closeModal(); renderWeekly(); renderWeeklyStats();
         toast(editingId ? 'Eintrag aktualisiert' : 'Eintrag hinzugefügt');
@@ -1715,12 +1738,8 @@ function renderWeekly() {
     const ratingFilter = document.getElementById('filterWeeklyRating').value;
     let filtered = weeklyGames.filter(g => {
         if (search && !g.title.toLowerCase().includes(search) && !(g.notes||'').toLowerCase().includes(search)) return false;
-        if (ratingFilter) {
-            const n = (g.notes||'').toLowerCase();
-            if (ratingFilter === 'top' && !(n.includes('mega') || n.includes('krass') || n.includes('super') || n.includes('game of the year'))) return false;
-            if (ratingFilter === 'flop' && !(n.includes('war nix') || n.includes('mies') || n.includes('abgebrochen') || n.includes('langweilig'))) return false;
-            if (ratingFilter === 'ok' && !(n.includes('ganz okay') || n.includes('ganz nett') || n.includes('ging so') || n.includes('nett'))) return false;
-        }
+        if (ratingFilter === 'none' && g.rating) return false;
+        if (ratingFilter && ratingFilter !== 'none' && g.rating !== parseInt(ratingFilter)) return false;
         return true;
     });
     const dir = weeklySortDir === 'asc' ? 1 : -1;
@@ -1733,7 +1752,7 @@ function renderWeekly() {
         <td>${escHtml(g.date||'')}</td>
         <td><strong>${escHtml(g.title)}</strong></td>
         <td>${g.hours ? g.hours+'h' : '—'}</td>
-        <td>${getRatingBadge(g.notes)}</td>
+        <td>${getRatingBadge(g.rating)}</td>
         <td><small style="color:var(--text-dim)">${escHtml(g.notes||'')}</small></td>
         <td>
             <button class="btn btn-sm" onclick="editWeekly('${g.id}')"><i class="bi bi-pencil"></i></button>
@@ -1742,13 +1761,14 @@ function renderWeekly() {
     </tr>`).join('');
 }
 
-function getRatingBadge(notes) {
-    if (!notes) return '';
-    const n = notes.toLowerCase();
-    if (n.includes('mega') || n.includes('krass') || n.includes('super') || n.includes('game of the year')) return '<span class="badge badge-played">Top</span>';
-    if (n.includes('war nix') || n.includes('mies') || n.includes('abgebrochen') || n.includes('langweilig')) return '<span class="badge badge-abandoned">Flop</span>';
-    if (n.includes('ganz okay') || n.includes('ganz nett') || n.includes('ging so') || n.includes('nett')) return '<span class="badge badge-wait-ea">OK</span>';
-    return '';
+const RATING_COLORS = { 5: '#2a7a2a', 4: '#4a9e4a', 3: '#b8890a', 2: '#c05a18', 1: '#a02828' };
+function getRatingBadge(rating) {
+    if (!rating) return '';
+    const n = parseInt(rating);
+    if (!n || n < 1 || n > 5) return '';
+    const color = RATING_COLORS[n];
+    const label = t('rating_' + n);
+    return `<span class="badge" style="background:${color};color:#fff" title="${label}">${n}</span>`;
 }
 
 function sortWeeklyBy(col) {
@@ -1766,12 +1786,15 @@ function editWeekly(id) {
     document.getElementById('formField2Label').textContent = t('modal_hours');
     document.getElementById('formField3Label').textContent = t('modal_date');
     document.getElementById('formStatusGroup').style.display = 'none';
+    document.getElementById('formPlatformGroup').style.display = 'none';
     document.getElementById('formCategory').style.display = 'none';
+    document.getElementById('formRatingGroup').style.display = '';
     document.getElementById('formDate').style.display = '';
-    document.getElementById('formName').value  = g.title;
-    document.getElementById('formAppId').value = g.hours || '';
-    document.getElementById('formNotes').value = g.notes || '';
-    document.getElementById('formDate').value  = g.date || '';
+    document.getElementById('formName').value   = g.title;
+    document.getElementById('formAppId').value  = g.hours || '';
+    document.getElementById('formRating').value = g.rating != null ? String(g.rating) : '';
+    document.getElementById('formNotes').value  = g.notes || '';
+    document.getElementById('formDate').value   = g.date || '';
     document.getElementById('modal').dataset.mode = 'weekly';
     document.getElementById('modal').classList.add('active');
 }
