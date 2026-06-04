@@ -120,35 +120,34 @@ a:hover { text-decoration: underline; }
 }
 .btn-sm:hover { background: var(--bg-hover); color: var(--text); border-color: var(--accent); }
 
-.tabs {
-    display: flex;
-    gap: 0;
-    padding: 0 2rem;
-    background: var(--bg-card);
-    overflow-x: auto;
-    border-bottom: 1px solid var(--border);
-    box-shadow: var(--shadow);
+/* Dimmed rows for inactive statuses */
+tr.row-inactive { opacity: 0.45; }
+tr.row-inactive:hover { opacity: 0.75; }
+
+/* Multi-select dropdown */
+.multi-select { position: relative; display: inline-block; width: 100%; }
+.multi-select-btn {
+    background: var(--bg-card); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.2rem 0.5rem; font-size: 0.78rem; cursor: pointer;
+    white-space: nowrap; width: 100%; text-align: left;
 }
-.tab {
-    padding: 0.7rem 1rem;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    font-size: 0.82rem;
-    white-space: nowrap;
-    color: var(--text-dim);
-    transition: all 0.15s;
-    font-weight: 500;
+.multi-select-btn::after { content: ' ▾'; font-size: 0.65em; opacity: 0.6; }
+.multi-select-btn:hover { background: var(--bg-hover); }
+.multi-select-panel {
+    display: none; position: fixed; z-index: 1000;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); padding: 0.25rem 0; white-space: nowrap;
 }
-.tab:hover { color: var(--text); background: var(--bg-hover); }
-.tab.active { color: var(--primary); border-bottom-color: var(--accent); }
-.tab .count {
-    background: var(--bg);
-    border-radius: 10px;
-    padding: 0.1rem 0.45rem;
-    font-size: 0.7rem;
-    margin-left: 0.3rem;
-    color: var(--text-dim);
-    border: 1px solid var(--border);
+.multi-select-panel.open { display: block; }
+.multi-select-panel label {
+    display: flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.5rem;
+    font-size: 0.75rem; color: var(--text); cursor: pointer; font-weight: normal;
+    line-height: 1.4;
+}
+.multi-select-panel label:hover { background: var(--bg-hover); }
+.multi-select-panel input[type="checkbox"] {
+    width: 13px; height: 13px; margin: 0; flex-shrink: 0;
+    accent-color: var(--accent);
 }
 
 .filter-bar {
@@ -453,7 +452,6 @@ a:hover { text-decoration: underline; }
 
 @media (max-width: 768px) {
     .header, .main, .stats { padding-left: 1rem; padding-right: 1rem; }
-    .tabs { padding: 0 1rem; }
     .game-table { font-size: 0.78rem; }
     .topnav { padding: 0 1rem; }
     /* header: hide Export/Import labels, keep icons */
@@ -516,8 +514,6 @@ a:hover { text-decoration: underline; }
     .stats { gap: 0.5rem; padding: 0.5rem 0.75rem; }
     .stat { padding: 0.5rem 0.75rem; min-width: 60px; }
     .stat-value { font-size: 1rem; }
-    /* Tabs: scroll horizontally */
-    .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
     /* Main padding */
     .main { padding: 0.6rem 0.5rem; }
     /* Table: horizontal scroll in landscape */
@@ -630,7 +626,6 @@ a:hover { text-decoration: underline; }
 
 <div id="view-watchlist">
 <div class="stats" id="stats"></div>
-<div class="tabs" id="tabs"></div>
 <div class="main">
     <div class="table-card">
     <table class="game-table">
@@ -664,14 +659,7 @@ a:hover { text-decoration: underline; }
                     </select>
                 </th>
                 <th>
-                    <select id="filterUserStatus" onchange="renderGames()">
-                        <option value="">Alle</option>
-                        <option value="candidate">Kandidat</option>
-                        <option value="played">Gespielt</option>
-                        <option value="wait-ea">Warte EA</option>
-                        <option value="abandoned">Abgebrochen</option>
-                        <option value="obsolete">Aussortiert</option>
-                    </select>
+                    <button class="multi-select-btn" onclick="toggleStatusFilter()" id="statusFilterBtn">Status</button>
                 </th>
                 <th>
                     <select id="filterPlatform" onchange="renderGames()">
@@ -896,11 +884,19 @@ a:hover { text-decoration: underline; }
     </div>
 </div>
 
+<div class="multi-select-panel" id="statusFilterPanel">
+    <label><input type="checkbox" value="candidate" checked onchange="renderGames()"> <span data-i18n="status_candidate">Kandidat</span></label>
+    <label><input type="checkbox" value="wait-ea" checked onchange="renderGames()"> <span data-i18n="status_wait_ea">Warte EA</span></label>
+    <label><input type="checkbox" value="played" onchange="renderGames()"> <span data-i18n="status_played">Gespielt</span></label>
+    <label><input type="checkbox" value="abandoned" onchange="renderGames()"> <span data-i18n="status_abandoned">Abgebrochen</span></label>
+    <label><input type="checkbox" value="obsolete" onchange="renderGames()"> <span data-i18n="status_obsolete">Aussortiert</span></label>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.6.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -1088,8 +1084,7 @@ function _rebuildSelects() {
     <option value="unreleased">${t('steam_unreleased')}</option>
     <option value="unknown">${t('steam_unknown')}</option>`; filterSteam.value = v; }
 
-  const filterStatus = document.getElementById('filterUserStatus');
-  if (filterStatus) { const v = filterStatus.value; filterStatus.innerHTML = `<option value="">${t('filter_all')}</option>${statusOptions()}`; filterStatus.value = v; }
+
 
   const filterPlat = document.getElementById('filterPlatform');
   if (filterPlat) { const v = filterPlat.value; filterPlat.innerHTML = `
@@ -1195,7 +1190,6 @@ let games        = [];
 let weeklyGames  = [];
 let weekendGames = [];
 let activeView   = 'watchlist';
-let activeCategory     = 'all';
 let editingId          = null;
 let currentSortColumn  = 'name';
 let currentSortDir     = 'asc';
@@ -1460,23 +1454,11 @@ function init() {
 
 // ==================== UI ====================
 function renderAll() {
-    renderTabs(); renderGames(); renderStats();
+    renderGames(); renderStats();
     if (activeView === 'weekly')   { renderWeekly(); renderWeeklyStats(); }
     if (activeView === 'weekends') { renderWeekends(); renderWeekendsStats(); }
 }
 
-function renderTabs() {
-    const tabsEl = document.getElementById('tabs');
-    let html = `<div class="tab ${activeCategory === 'all' ? 'active' : ''}" onclick="setCategory('all')">${t('filter_all')} <span class="count">${games.length}</span></div>`;
-    for (const [key, cat] of Object.entries(CATEGORIES)) {
-        const count = games.filter(g => g.category === key).length;
-        if (count === 0) continue;
-        html += `<div class="tab ${activeCategory === key ? 'active' : ''}" onclick="setCategory('${key}')"><i class="${cat.icon}"></i> ${t('cat_'+key)} <span class="count">${count}</span></div>`;
-    }
-    tabsEl.innerHTML = html;
-}
-
-function setCategory(cat) { activeCategory = cat; renderTabs(); renderGames(); }
 
 function renderStats() {
     const total = games.length;
@@ -1499,15 +1481,13 @@ function renderGames() {
     const search       = (document.getElementById('filterName')?.value || '').toLowerCase();
     const catFilter    = document.getElementById('filterCategory')?.value || '';
     const steamFilter  = document.getElementById('filterSteamStatus')?.value || '';
-    const statusFilter = document.getElementById('filterUserStatus')?.value || '';
+    const activeStatuses = getActiveStatuses();
     const platFilter   = document.getElementById('filterPlatform')?.value || '';
-    const showAdded    = true;
 
     let filtered = games.filter(g => {
-        if (activeCategory !== 'all' && g.category !== activeCategory) return false;
         if (catFilter    && g.category !== catFilter) return false;
         if (steamFilter  && (g.steam?.steam_status || 'unknown') !== steamFilter) return false;
-        if (statusFilter && g.status !== statusFilter) return false;
+        if (activeStatuses.length > 0 && !activeStatuses.includes(g.status)) return false;
         if (platFilter === 'xgp' && !g.xgp) return false;
         if (search && !g.name.toLowerCase().includes(search) && !(g.notes||'').toLowerCase().includes(search)) return false;
         return true;
@@ -1565,7 +1545,8 @@ function renderGames() {
         if (game.platform === 'epic') platforms.push(`<span class="badge badge-epic">${t('platform_epic')}</span>`);
         if (game.platform === 'gog')  platforms.push(`<span class="badge badge-gog">${t('platform_gog')}</span>`);
         const platformHtml = platforms.join(' ') || '';
-        return `<tr onclick="openEditModal('${game.id}')">
+        const inactiveClass = ['played','abandoned','obsolete'].includes(game.status) ? ' row-inactive' : '';
+        return `<tr class="${inactiveClass}" onclick="openEditModal('${game.id}')">
             <td>${noAppIdIcon}${steamLink}${notesHtml}</td>
             <td><small>${catLabel}</small></td>
             <td><span class="badge ${statusInfo.class}">${statusLabel}</span></td>
@@ -1610,6 +1591,33 @@ function escHtml(str) {
     d.textContent = str;
     return d.innerHTML;
 }
+
+function getActiveStatuses() {
+    const checks = document.querySelectorAll('#statusFilterPanel input[type="checkbox"]');
+    const active = [];
+    checks.forEach(cb => { if (cb.checked) active.push(cb.value); });
+    return active;
+}
+
+function toggleStatusFilter() {
+    const panel = document.getElementById('statusFilterPanel');
+    const btn = document.getElementById('statusFilterBtn');
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) {
+        const r = btn.getBoundingClientRect();
+        panel.style.top = r.bottom + 2 + 'px';
+        panel.style.left = r.left + 'px';
+    }
+}
+
+// Close multi-select when clicking outside
+document.addEventListener('click', e => {
+    const panel = document.getElementById('statusFilterPanel');
+    const btn = document.getElementById('statusFilterBtn');
+    if (panel && btn && !panel.contains(e.target) && e.target !== btn) {
+        panel.classList.remove('open');
+    }
+});
 
 function sortByColumn(col) {
     if (currentSortColumn === col) currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
@@ -1698,7 +1706,7 @@ function saveWatchlistEntry() {
             steam: { price: '', review_pct: null, review_count: 0, steam_status: 'unknown', release_date: '', is_ea: false }
         });
     }
-    saveGames(); closeModal(); renderTabs(); renderGames(); renderStats();
+    saveGames(); closeModal(); renderGames(); renderStats();
     toast(editingId ? t('toast_updated') : t('toast_added'));
 }
 
@@ -1740,7 +1748,7 @@ function deleteGame(id) {
     const game = games.find(g => g.id === id);
     if (!game || !confirm(`"${game.name}" wirklich löschen?`)) return;
     games = games.filter(g => g.id !== id);
-    saveGames(); renderTabs(); renderGames(); renderStats();
+    saveGames(); renderGames(); renderStats();
     toast('Spiel gelöscht');
 }
 
