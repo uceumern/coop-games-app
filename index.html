@@ -229,9 +229,9 @@ a:hover { text-decoration: underline; }
 }
 .game-table thead tr.filter-row input::placeholder { color: rgba(255,255,255,0.45); }
 .game-table thead tr.filter-row select option { background: var(--primary); color: #fff; }
-/* Clickable status badge */
-.badge-clickable { cursor: pointer; user-select: none; }
-.badge-clickable:hover { opacity: 0.8; filter: brightness(1.1); }
+/* Clickable table rows */
+.game-table tbody tr { cursor: pointer; }
+.game-table tbody tr:hover { background: rgba(255,255,255,0.04); }
 
 .badge {
     display: inline-flex;
@@ -836,7 +836,7 @@ a:hover { text-decoration: underline; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -1433,7 +1433,7 @@ function renderGames() {
         }
         const countHtml  = steam.review_count > 0 ? formatCount(steam.review_count) : '—';
         const steamLink  = game.appid
-            ? `<a href="https://store.steampowered.com/app/${game.appid}" target="_blank">${escHtml(game.name)}</a>`
+            ? `<a href="https://store.steampowered.com/app/${game.appid}" target="_blank" onclick="event.stopPropagation()">${escHtml(game.name)}</a>`
             : escHtml(game.name);
         const noAppIdIcon = !game.appid
             ? `<i class="bi bi-question-circle" style="color:var(--text-dim);font-size:0.8em;margin-right:0.35em" title="No Steam App ID set"></i>`
@@ -1445,10 +1445,10 @@ function renderGames() {
         if (game.platform === 'epic') platforms.push(`<span class="badge badge-epic">${t('platform_epic')}</span>`);
         if (game.platform === 'gog')  platforms.push(`<span class="badge badge-gog">${t('platform_gog')}</span>`);
         const platformHtml = platforms.join(' ') || '';
-        return `<tr>
+        return `<tr onclick="openEditModal('${game.id}')">
             <td>${noAppIdIcon}${steamLink}${notesHtml}</td>
             <td><small>${catLabel}</small></td>
-            <td><span class="badge ${statusInfo.class} badge-clickable" onclick="cycleStatus('${game.id}')" title="Klicken zum Ändern">${statusLabel}</span></td>
+            <td><span class="badge ${statusInfo.class}">${statusLabel}</span></td>
             <td>${platformHtml}</td>
             <td class="col-steam col-steam-first"><span class="badge ${steamStatusInfo.class}">${steamLabel}</span></td>
             <td class="col-steam">${steam.price || '—'}</td>
@@ -1456,23 +1456,13 @@ function renderGames() {
             <td class="col-steam">${countHtml}</td>
             <td class="col-added" style="font-size:0.78rem;color:var(--text-dim)">${addedHtml}</td>
             <td>
-                <button class="btn btn-sm" onclick="openEditModal('${game.id}')" title="Bearbeiten"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm" onclick="deleteGame('${game.id}')" title="Löschen"><i class="bi bi-trash3"></i></button>
+                <button class="btn btn-sm" onclick="event.stopPropagation(); openEditModal('${game.id}')" title="Bearbeiten"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm" onclick="event.stopPropagation(); deleteGame('${game.id}')" title="Löschen"><i class="bi bi-trash3"></i></button>
             </td>
         </tr>`;
     }).join('');
 }
 
-function cycleStatus(id) {
-    const order = ['candidate', 'played', 'wait-ea', 'abandoned', 'obsolete'];
-    const game  = games.find(g => g.id === id);
-    if (!game) return;
-    game.status = order[(order.indexOf(game.status) + 1) % order.length];
-    saveGames();
-    renderGames();
-    renderStats();
-    toast(t('toast_status_prefix') + t('status_'+(game.status||'candidate').replace(/-/g,'_')));
-}
 
 function getReviewColor(pct) {
     if (pct >= 90) return '#198754';
@@ -1748,15 +1738,15 @@ function renderWeekly() {
         if (weeklySortCol === 'title') return dir * a.title.localeCompare(b.title);
         return dir * (a.date||'').localeCompare(b.date||'');
     });
-    document.getElementById('weeklyTableBody').innerHTML = filtered.map(g => `<tr>
+    document.getElementById('weeklyTableBody').innerHTML = filtered.map(g => `<tr onclick="editWeekly('${g.id}')">
         <td>${escHtml(g.date||'')}</td>
         <td><strong>${escHtml(g.title)}</strong></td>
         <td>${g.hours ? g.hours+'h' : '—'}</td>
         <td>${getRatingBadge(g.rating)}</td>
         <td><small style="color:var(--text-dim)">${escHtml(g.notes||'')}</small></td>
         <td>
-            <button class="btn btn-sm" onclick="editWeekly('${g.id}')"><i class="bi bi-pencil"></i></button>
-            <button class="btn btn-sm" onclick="deleteWeekly('${g.id}')"><i class="bi bi-trash3"></i></button>
+            <button class="btn btn-sm" onclick="event.stopPropagation(); editWeekly('${g.id}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm" onclick="event.stopPropagation(); deleteWeekly('${g.id}')"><i class="bi bi-trash3"></i></button>
         </td>
     </tr>`).join('');
 }

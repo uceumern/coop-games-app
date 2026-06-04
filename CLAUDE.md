@@ -38,7 +38,6 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 **Key JS patterns:**
 - `setSyncStatus(state, lastModified, user, error)` — updates both the header chip and the settings panel sync indicator
 - `renderGames()` / `renderWeekly()` / `renderWeekends()` — full re-render from in-memory arrays; called on every filter/sort change
-- `cycleStatus(id)` — cycles a watchlist game through `candidate → played → wait-ea → abandoned → obsolete → candidate`
 - `switchView(view)` — toggles between `watchlist`, `weekly`, `weekends`
 - `syncToGist()` / `loadFromGist()` — Gist I/O, debounced on save
 
