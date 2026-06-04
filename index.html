@@ -120,6 +120,18 @@ a:hover { text-decoration: underline; }
 }
 .btn-sm:hover { background: var(--bg-hover); color: var(--text); border-color: var(--accent); }
 
+/* Duplicate hint in watchlist modal */
+.duplicate-hint {
+    margin-top: 0.35rem; padding: 0.35rem 0.5rem; font-size: 0.75rem;
+    background: rgba(200, 154, 24, 0.12); border: 1px solid rgba(200, 154, 24, 0.3);
+    border-radius: 4px; color: var(--text);
+}
+.duplicate-hint .dup-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.15rem 0;
+}
+.duplicate-hint .dup-item + .dup-item { border-top: 1px solid rgba(255,255,255,0.06); }
+
 /* Dimmed rows for inactive statuses */
 tr.row-inactive { opacity: 0.45; }
 tr.row-inactive:hover { opacity: 0.75; }
@@ -767,7 +779,8 @@ tr.row-inactive:hover { opacity: 0.75; }
         <div class="modal-body">
         <div class="form-group">
             <label data-i18n="modal_name">Name *</label>
-            <input type="text" id="wlName" placeholder="Game name">
+            <input type="text" id="wlName" placeholder="Game name" oninput="updateDuplicateHint()">
+            <div id="wlDuplicateHint" class="duplicate-hint" style="display:none"></div>
         </div>
         <div class="form-group">
             <label data-i18n="modal_appid">Steam AppID (optional)</label>
@@ -896,7 +909,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.7.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -963,6 +976,7 @@ const STRINGS = {
     toast_pat_required: 'PAT und Gist-ID sind Pflichtfelder',
     toast_imported: 'Daten importiert', toast_status_prefix: 'Status: ',
     toast_name_required: 'Name ist Pflichtfeld', toast_updated: 'Eintrag aktualisiert', toast_added: 'Eintrag hinzugefügt',
+    hint_existing_games: 'Bereits in der Liste:',
     sync_connecting: 'Verbinde...', sync_loading: 'Lade...', sync_syncing: 'Synchronisiere...',
     sync_synced: 'Synchronisiert', sync_error: 'Fehler', sync_offline: 'Nicht konfiguriert',
     sync_just_now: 'gerade eben', sync_minutes: 'Min.', sync_hours: 'Std.', sync_days: 'Tage',
@@ -1027,6 +1041,7 @@ const STRINGS = {
     toast_pat_required: 'PAT and Gist ID are required',
     toast_imported: 'Data imported', toast_status_prefix: 'Status: ',
     toast_name_required: 'Name is required', toast_updated: 'Entry updated', toast_added: 'Entry added',
+    hint_existing_games: 'Already in the list:',
     sync_connecting: 'Connecting...', sync_loading: 'Loading...', sync_syncing: 'Syncing...',
     sync_synced: 'Synced', sync_error: 'Error', sync_offline: 'Not configured',
     sync_just_now: 'just now', sync_minutes: 'min', sync_hours: 'hrs', sync_days: 'days',
@@ -1592,6 +1607,23 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
+function updateDuplicateHint() {
+    const input = document.getElementById('wlName').value.trim().toLowerCase();
+    const hint = document.getElementById('wlDuplicateHint');
+    if (input.length < 2) { hint.style.display = 'none'; return; }
+    const matches = games.filter(g => {
+        if (editingId && g.id === editingId) return false;
+        return g.name.toLowerCase().includes(input) || input.includes(g.name.toLowerCase());
+    });
+    if (matches.length === 0) { hint.style.display = 'none'; return; }
+    hint.style.display = '';
+    hint.innerHTML = `<div style="margin-bottom:0.2rem;font-weight:500">${t('hint_existing_games')}</div>` +
+        matches.slice(0, 5).map(g => {
+            const statusLabel = t('status_' + (g.status || 'candidate').replace(/-/g, '_'));
+            return `<div class="dup-item"><span>${escHtml(g.name)}</span><span class="badge ${(STATUS_LABELS[g.status]||STATUS_LABELS.candidate).class}" style="font-size:0.65rem">${statusLabel}</span></div>`;
+        }).join('');
+}
+
 function getActiveStatuses() {
     const checks = document.querySelectorAll('#statusFilterPanel input[type="checkbox"]');
     const active = [];
@@ -1654,6 +1686,7 @@ function openAddModal() {
     } else {
         document.getElementById('modalWatchlistTitle').textContent = t('modal_add_game');
         document.getElementById('wlName').value = '';
+        document.getElementById('wlDuplicateHint').style.display = 'none';
         document.getElementById('wlAppId').value = '';
         document.getElementById('wlCategory').value = 'hauptliste';
         document.getElementById('wlStatus').value = 'candidate';
@@ -1678,6 +1711,7 @@ function openEditModal(id) {
     document.getElementById('wlPlatformXgp').checked  = !!game.xgp;
     document.getElementById('wlPlatformEpic').checked = game.platform === 'epic';
     document.getElementById('wlPlatformGog').checked  = game.platform === 'gog';
+    updateDuplicateHint();
     document.getElementById('modalWatchlist').classList.add('active');
 }
 
