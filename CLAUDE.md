@@ -29,7 +29,7 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 {
   "watchlist": [{ "id", "name", "appid", "category", "status", "xgp", "platform", "notes", "added", "steam": { "steam_status", "price", "review_pct", "review_count", "steam_updated" } }],
   "weekly":    [{ "id", "date", "title", "hours", "rating", "notes" }],
-  "weekends":  [{ "id", "date", "dateLabel", "title", "location", "special" }],
+  "weekends":  [{ "id", "dateStart", "dateEnd", "title", "location", "special" }],
   "lastModified": "<ISO timestamp>",
   "lastModifiedBy": "<username>"
 }

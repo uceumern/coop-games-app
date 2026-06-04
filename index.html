@@ -772,46 +772,73 @@ a:hover { text-decoration: underline; }
 </div>
 </div>
 
-<!-- Add/Edit Modal -->
-<div class="modal-overlay" id="modal">
+<!-- Watchlist Modal -->
+<div class="modal-overlay" id="modalWatchlist" onclick="if(event.target===this)closeModal()">
     <div class="modal">
-        <h2 id="modalTitle">Spiel hinzufügen</h2>
+        <h2 id="modalWatchlistTitle" data-i18n="modal_add_game">Spiel hinzufügen</h2>
         <div class="modal-body">
         <div class="form-group">
             <label data-i18n="modal_name">Name *</label>
-            <input type="text" id="formName" placeholder="Game name">
+            <input type="text" id="wlName" placeholder="Game name">
         </div>
         <div class="form-group">
-            <label id="formField2Label" data-i18n="modal_appid">Steam AppID (optional)</label>
-            <input type="text" id="formAppId" placeholder="e.g. 1966720">
+            <label data-i18n="modal_appid">Steam AppID (optional)</label>
+            <input type="text" id="wlAppId" placeholder="e.g. 1966720">
         </div>
-        <div class="form-group" id="formCategoryGroup">
-            <label id="formField3Label" data-i18n="th_category">Kategorie</label>
-            <select id="formCategory"></select>
-            <input type="text" id="formDate" placeholder="e.g. 2026/05" style="display:none">
+        <div class="form-group">
+            <label data-i18n="th_category">Kategorie</label>
+            <select id="wlCategory"></select>
         </div>
-        <div class="form-group" id="formStatusGroup">
+        <div class="form-group">
             <label data-i18n="modal_status">Status</label>
-            <select id="formStatus"></select>
+            <select id="wlStatus"></select>
         </div>
-        <div class="form-group" id="formPlatformGroup">
+        <div class="form-group">
             <label data-i18n="modal_platform">Plattform / Verfügbarkeit</label>
             <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.3rem">
                 <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;color:var(--text);font-weight:normal">
-                    <input type="checkbox" id="formPlatformXgp"> <span data-i18n="modal_platform_xgp">Xbox / PC Game Pass</span>
+                    <input type="checkbox" id="wlPlatformXgp"> <span data-i18n="modal_platform_xgp">Xbox / PC Game Pass</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;color:var(--text);font-weight:normal">
-                    <input type="checkbox" id="formPlatformEpic"> <span data-i18n="modal_platform_epic">Epic Games Store</span>
+                    <input type="checkbox" id="wlPlatformEpic"> <span data-i18n="modal_platform_epic">Epic Games Store</span>
                 </label>
                 <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;color:var(--text);font-weight:normal">
-                    <input type="checkbox" id="formPlatformGog"> <span data-i18n="modal_platform_gog">GOG</span>
+                    <input type="checkbox" id="wlPlatformGog"> <span data-i18n="modal_platform_gog">GOG</span>
                 </label>
             </div>
-            <small data-i18n="modal_platform_hint"></small>
         </div>
-        <div class="form-group" id="formRatingGroup" style="display:none">
+        <div class="form-group">
+            <label data-i18n="modal_notes">Notizen</label>
+            <input type="text" id="wlNotes" data-i18n-ph="modal_notes_placeholder" placeholder="Optionale Notizen...">
+        </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal()" data-i18n="modal_cancel">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveWatchlistEntry()" data-i18n="modal_save">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<!-- Weekly Modal -->
+<div class="modal-overlay" id="modalWeekly" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+        <h2 id="modalWeeklyTitle" data-i18n="modal_add_weekly">Weekly Eintrag hinzufügen</h2>
+        <div class="modal-body">
+        <div class="form-group">
+            <label data-i18n="modal_name">Name *</label>
+            <input type="text" id="wkName" placeholder="Game name">
+        </div>
+        <div class="form-group">
+            <label data-i18n="modal_date">Datum *</label>
+            <input type="date" id="wkDate">
+        </div>
+        <div class="form-group">
+            <label data-i18n="modal_hours">Stunden</label>
+            <input type="text" id="wkHours" placeholder="e.g. 12">
+        </div>
+        <div class="form-group">
             <label data-i18n="modal_verdict">Fazit</label>
-            <select id="formRating">
+            <select id="wkRating">
                 <option value="" data-i18n="modal_verdict_none">— kein Rating —</option>
                 <option value="5" data-i18n="modal_verdict_5">5 – Highlight</option>
                 <option value="4" data-i18n="modal_verdict_4">4 – Stark</option>
@@ -822,12 +849,49 @@ a:hover { text-decoration: underline; }
         </div>
         <div class="form-group">
             <label data-i18n="modal_notes">Notizen</label>
-            <input type="text" id="formNotes" data-i18n-ph="modal_notes_placeholder" placeholder="Optionale Notizen...">
+            <input type="text" id="wkNotes" data-i18n-ph="modal_notes_placeholder" placeholder="Optionale Notizen...">
         </div>
         </div>
         <div class="modal-actions">
             <button class="btn" onclick="closeModal()" data-i18n="modal_cancel">Abbrechen</button>
-            <button class="btn btn-primary" onclick="saveGame()" data-i18n="modal_save">Speichern</button>
+            <button class="btn btn-primary" onclick="saveWeeklyEntry()" data-i18n="modal_save">Speichern</button>
+        </div>
+    </div>
+</div>
+
+<!-- Weekends Modal -->
+<div class="modal-overlay" id="modalWeekend" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+        <h2 id="modalWeekendTitle" data-i18n="modal_add_weekend">Coop Weekend hinzufügen</h2>
+        <div class="modal-body">
+        <div class="form-group">
+            <label data-i18n="modal_name">Name *</label>
+            <input type="text" id="weTitle" placeholder="Game name">
+        </div>
+        <div class="form-group">
+            <label data-i18n="modal_date_start">Startdatum</label>
+            <input type="date" id="weDateStart">
+        </div>
+        <div class="form-group">
+            <label data-i18n="modal_date_end">Enddatum</label>
+            <input type="date" id="weDateEnd">
+        </div>
+        <div class="form-group">
+            <label data-i18n="modal_location">Ort</label>
+            <select id="weLocation">
+                <option value="" data-i18n="modal_location_none">— kein Ort —</option>
+                <option value="Ulf">Ulf</option>
+                <option value="Falk">Falk</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label data-i18n="th_special">Sonderaktion</label>
+            <input type="text" id="weSpecial" data-i18n-ph="modal_notes_placeholder" placeholder="Optionale Notizen...">
+        </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn" onclick="closeModal()" data-i18n="modal_cancel">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveWeekendEntry()" data-i18n="modal_save">Speichern</button>
         </div>
     </div>
 </div>
@@ -836,7 +900,7 @@ a:hover { text-decoration: underline; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -888,7 +952,9 @@ const STRINGS = {
     modal_add_weekly: 'Weekly Eintrag hinzufügen', modal_edit_weekly: 'Weekly Eintrag bearbeiten',
     modal_add_weekend: 'Coop Weekend hinzufügen', modal_edit_weekend: 'Coop Weekend bearbeiten',
     modal_name: 'Name *', modal_appid: 'Steam AppID (optional)', modal_hours: 'Stunden',
-    modal_date: 'Datum *', modal_status: 'Status', modal_notes: 'Notizen',
+    modal_date: 'Datum *', modal_date_start: 'Startdatum', modal_date_end: 'Enddatum',
+    modal_location: 'Ort', modal_location_none: '— kein Ort —',
+    modal_status: 'Status', modal_notes: 'Notizen',
     modal_verdict: 'Fazit', modal_verdict_none: '— kein Rating —',
     modal_verdict_5: '5 – Highlight', modal_verdict_4: '4 – Stark', modal_verdict_3: '3 – Solide', modal_verdict_2: '2 – Schwach', modal_verdict_1: '1 – Reinfall',
     rating_5: 'Highlight', rating_4: 'Stark', rating_3: 'Solide', rating_2: 'Schwach', rating_1: 'Reinfall',
@@ -900,6 +966,7 @@ const STRINGS = {
     toast_saved: 'Gespeichert', toast_deleted: 'Eintrag gelöscht',
     toast_pat_required: 'PAT und Gist-ID sind Pflichtfelder',
     toast_imported: 'Daten importiert', toast_status_prefix: 'Status: ',
+    toast_name_required: 'Name ist Pflichtfeld', toast_updated: 'Eintrag aktualisiert', toast_added: 'Eintrag hinzugefügt',
     sync_connecting: 'Verbinde...', sync_loading: 'Lade...', sync_syncing: 'Synchronisiere...',
     sync_synced: 'Synchronisiert', sync_error: 'Fehler', sync_offline: 'Nicht konfiguriert',
     sync_just_now: 'gerade eben', sync_minutes: 'Min.', sync_hours: 'Std.', sync_days: 'Tage',
@@ -949,7 +1016,9 @@ const STRINGS = {
     modal_add_weekly: 'Add Weekly Entry', modal_edit_weekly: 'Edit Weekly Entry',
     modal_add_weekend: 'Add Coop Weekend', modal_edit_weekend: 'Edit Coop Weekend',
     modal_name: 'Name *', modal_appid: 'Steam AppID (optional)', modal_hours: 'Hours',
-    modal_date: 'Date *', modal_status: 'Status', modal_notes: 'Notes',
+    modal_date: 'Date *', modal_date_start: 'Start date', modal_date_end: 'End date',
+    modal_location: 'Location', modal_location_none: '— no location —',
+    modal_status: 'Status', modal_notes: 'Notes',
     modal_verdict: 'Verdict', modal_verdict_none: '— no rating —',
     modal_verdict_5: '5 – Highlight', modal_verdict_4: '4 – Strong', modal_verdict_3: '3 – Solid', modal_verdict_2: '2 – Weak', modal_verdict_1: '1 – Flop',
     rating_5: 'Highlight', rating_4: 'Strong', rating_3: 'Solid', rating_2: 'Weak', rating_1: 'Flop',
@@ -961,6 +1030,7 @@ const STRINGS = {
     toast_saved: 'Saved', toast_deleted: 'Entry deleted',
     toast_pat_required: 'PAT and Gist ID are required',
     toast_imported: 'Data imported', toast_status_prefix: 'Status: ',
+    toast_name_required: 'Name is required', toast_updated: 'Entry updated', toast_added: 'Entry added',
     sync_connecting: 'Connecting...', sync_loading: 'Loading...', sync_syncing: 'Syncing...',
     sync_synced: 'Synced', sync_error: 'Error', sync_offline: 'Not configured',
     sync_just_now: 'just now', sync_minutes: 'min', sync_hours: 'hrs', sync_days: 'days',
@@ -1026,10 +1096,10 @@ function _rebuildSelects() {
     <option value="">${t('filter_platform_all')}</option>
     <option value="xgp">${t('filter_xgp_only')}</option>`; filterPlat.value = v; }
 
-  const formCat = document.getElementById('formCategory');
+  const formCat = document.getElementById('wlCategory');
   if (formCat) { const v = formCat.value; formCat.innerHTML = catOptions(); formCat.value = v; }
 
-  const formStatus = document.getElementById('formStatus');
+  const formStatus = document.getElementById('wlStatus');
   if (formStatus) { const v = formStatus.value; formStatus.innerHTML = statusOptions(); formStatus.value = v; }
 
   const themeSel = document.getElementById('settingTheme');
@@ -1232,6 +1302,8 @@ async function syncFromGist() {
         if (data.watchlist)  { games        = data.watchlist;  localStorage.setItem(STORAGE_KEY, JSON.stringify(games)); }
         if (data.weekly)     { weeklyGames  = data.weekly;     localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); }
         if (data.weekends)   { weekendGames = data.weekends;   localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); }
+        migrateWeeklyDates();
+        migrateWeekendDates();
         // Hide config prompt, re-render
         document.getElementById('configPrompt').style.display = 'none';
         renderAll();
@@ -1304,6 +1376,8 @@ function loadFromLocalStorage() {
     try { games        = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { games = []; }
     try { weeklyGames  = JSON.parse(localStorage.getItem(STORAGE_KEY_WEEKLY) || '[]'); } catch(e) { weeklyGames = []; }
     try { weekendGames = JSON.parse(localStorage.getItem(STORAGE_KEY_WEEKENDS) || '[]'); } catch(e) { weekendGames = []; }
+    migrateWeeklyDates();
+    migrateWeekendDates();
 }
 
 function saveLocal() {
@@ -1315,6 +1389,52 @@ function saveLocal() {
 function saveGames()   { saveLocal(); syncToGist(); }
 function saveWeekly()  { localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); syncToGist(); }
 function saveWeekends(){ localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); syncToGist(); }
+
+// Migrate weekly: date from YYYY/MM to ISO YYYY-MM-01
+function migrateWeeklyDates() {
+    let changed = false;
+    weeklyGames.forEach(g => {
+        if (!g.date || g.date.includes('-')) return; // already ISO or empty
+        const parts = g.date.split('/');
+        g.date = `${parts[0]}-${parts[1] || '01'}-01`;
+        changed = true;
+    });
+    if (changed) saveWeekly();
+}
+
+// Migrate weekends: dateLabel/date → dateStart/dateEnd (ISO)
+function migrateWeekendDates() {
+    let changed = false;
+    weekendGames.forEach(g => {
+        if (g.dateStart) return; // already migrated
+        const dl = g.dateLabel || '';
+        // Pattern: DD.MM.–DD.MM.YYYY
+        const m = dl.match(/(\d{2})\.(\d{2})\.\s*[–-]\s*(\d{2})\.(\d{2})\.(\d{4})/);
+        if (m) {
+            const [, sd, sm, ed, em, year] = m;
+            // Start month might differ from end month (e.g. 30.06.–03.07.2016)
+            // If start month > end month, start is in the same year
+            const startMonth = parseInt(sm) > parseInt(em) ? sm : sm;
+            g.dateStart = `${year}-${sm}-${sd}`;
+            g.dateEnd   = `${year}-${em}-${ed}`;
+        } else {
+            // Year-only (e.g. "2011") or fallback from old date field
+            const ym = dl.match(/^(\d{4})$/);
+            if (ym) {
+                g.dateStart = `${ym[1]}-01-01`;
+            } else if (g.date) {
+                // old format YYYY/MM
+                const parts = g.date.split('/');
+                g.dateStart = `${parts[0]}-${parts[1] || '01'}-01`;
+            }
+            g.dateEnd = null;
+        }
+        delete g.dateLabel;
+        delete g.date;
+        changed = true;
+    });
+    if (changed) saveWeekends();
+}
 
 
 // ==================== INIT ====================
@@ -1504,135 +1624,70 @@ function updateSortArrows() {
     if (th) { const a = th.querySelector('.sort-arrow'); if (a) a.textContent = currentSortDir === 'asc' ? ' ▲' : ' ▼'; }
 }
 
-// ==================== MODAL ====================
+// ==================== MODALS ====================
 function openAddModal() {
     editingId = null;
-    const modal = document.getElementById('modal');
-    modal.dataset.mode = activeView;
-    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
     if (activeView === 'weekly') {
-        document.getElementById('modalTitle').textContent = t('modal_add_weekly');
-        document.getElementById('formField2Label').textContent = t('modal_hours');
-        document.getElementById('formField3Label').textContent = t('modal_date');
-        document.getElementById('formStatusGroup').style.display = 'none';
-        document.getElementById('formPlatformGroup').style.display = 'none';
-        document.getElementById('formCategory').style.display = 'none';
-        document.getElementById('formRatingGroup').style.display = '';
-        document.getElementById('formDate').style.display = '';
-        document.getElementById('formDate').value = new Date().toISOString().slice(0,7).replace('-','/');
-        document.getElementById('formName').value = '';
-        document.getElementById('formAppId').value = '';
-        document.getElementById('formRating').value = '';
-        document.getElementById('formNotes').value = '';
+        document.getElementById('modalWeeklyTitle').textContent = t('modal_add_weekly');
+        document.getElementById('wkName').value = '';
+        document.getElementById('wkDate').value = new Date().toISOString().slice(0,10);
+        document.getElementById('wkHours').value = '';
+        document.getElementById('wkRating').value = '';
+        document.getElementById('wkNotes').value = '';
+        document.getElementById('modalWeekly').classList.add('active');
     } else if (activeView === 'weekends') {
-        document.getElementById('modalTitle').textContent = t('modal_add_weekend');
-        document.getElementById('formField2Label').textContent = t('th_location');
-        document.getElementById('formField3Label').textContent = t('modal_date');
-        document.getElementById('formStatusGroup').style.display = 'none';
-        document.getElementById('formPlatformGroup').style.display = 'none';
-        document.getElementById('formCategory').style.display = 'none';
-        document.getElementById('formDate').style.display = '';
-        document.getElementById('formDate').value = '';
-        document.getElementById('formName').value = '';
-        document.getElementById('formAppId').value = '';
-        document.getElementById('formNotes').value = '';
+        document.getElementById('modalWeekendTitle').textContent = t('modal_add_weekend');
+        document.getElementById('weTitle').value = '';
+        document.getElementById('weDateStart').value = '';
+        document.getElementById('weDateEnd').value = '';
+        document.getElementById('weLocation').value = '';
+        document.getElementById('weSpecial').value = '';
+        document.getElementById('modalWeekend').classList.add('active');
     } else {
-        document.getElementById('modalTitle').textContent = t('modal_add_game');
-        document.getElementById('formField2Label').textContent = t('modal_appid');
-        document.getElementById('formField3Label').textContent = t('th_category');
-        document.getElementById('formCategory').style.display = '';
-        document.getElementById('formDate').style.display = 'none';
-        document.getElementById('formCategory').value = 'hauptliste';
-        document.getElementById('formStatus').value = 'candidate';
-        document.getElementById('formName').value = '';
-        document.getElementById('formAppId').value = '';
-        document.getElementById('formNotes').value = '';
-        document.getElementById('formPlatformXgp').checked = false;
-        document.getElementById('formPlatformEpic').checked = false;
-        document.getElementById('formPlatformGog').checked = false;
+        document.getElementById('modalWatchlistTitle').textContent = t('modal_add_game');
+        document.getElementById('wlName').value = '';
+        document.getElementById('wlAppId').value = '';
+        document.getElementById('wlCategory').value = 'hauptliste';
+        document.getElementById('wlStatus').value = 'candidate';
+        document.getElementById('wlNotes').value = '';
+        document.getElementById('wlPlatformXgp').checked = false;
+        document.getElementById('wlPlatformEpic').checked = false;
+        document.getElementById('wlPlatformGog').checked = false;
+        document.getElementById('modalWatchlist').classList.add('active');
     }
-    modal.classList.add('active');
 }
 
 function openEditModal(id) {
     const game = games.find(g => g.id === id);
     if (!game) return;
     editingId = id;
-    const modal = document.getElementById('modal');
-    modal.dataset.mode = 'watchlist';
-    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
-    document.getElementById('modalTitle').textContent = t('modal_edit_game');
-    document.getElementById('formField2Label').textContent = t('modal_appid');
-    document.getElementById('formField3Label').textContent = t('th_category');
-    document.getElementById('formCategory').style.display = '';
-    document.getElementById('formDate').style.display = 'none';
-    document.getElementById('formName').value = game.name;
-    document.getElementById('formAppId').value = game.appid || '';
-    document.getElementById('formCategory').value = game.category;
-    document.getElementById('formStatus').value = game.status;
-    document.getElementById('formNotes').value = game.notes || '';
-    document.getElementById('formPlatformXgp').checked  = !!game.xgp;
-    document.getElementById('formPlatformEpic').checked = game.platform === 'epic';
-    document.getElementById('formPlatformGog').checked  = game.platform === 'gog';
-    modal.classList.add('active');
+    document.getElementById('modalWatchlistTitle').textContent = t('modal_edit_game');
+    document.getElementById('wlName').value = game.name;
+    document.getElementById('wlAppId').value = game.appid || '';
+    document.getElementById('wlCategory').value = game.category;
+    document.getElementById('wlStatus').value = game.status;
+    document.getElementById('wlNotes').value = game.notes || '';
+    document.getElementById('wlPlatformXgp').checked  = !!game.xgp;
+    document.getElementById('wlPlatformEpic').checked = game.platform === 'epic';
+    document.getElementById('wlPlatformGog').checked  = game.platform === 'gog';
+    document.getElementById('modalWatchlist').classList.add('active');
 }
 
 function closeModal() {
-    document.getElementById('modal').classList.remove('active');
-    document.getElementById('modal').dataset.mode = '';
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
     editingId = null;
-    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
-    document.getElementById('formCategory').style.display = '';
-    document.getElementById('formDate').style.display = 'none';
 }
 
-function saveGame() {
-    const modal = document.getElementById('modal');
-    const mode  = modal.dataset.mode || 'watchlist';
-    const name  = document.getElementById('formName').value.trim();
-    if (!name) { toast('Name ist Pflichtfeld'); return; }
-
-    if (mode === 'weekly') {
-        const hours  = parseFloat(document.getElementById('formAppId').value) || null;
-        const rating = parseInt(document.getElementById('formRating').value) || null;
-        const notes  = document.getElementById('formNotes').value.trim();
-        const date   = document.getElementById('formDate').value.trim() || new Date().toISOString().slice(0,7).replace('-','/');
-        if (editingId) {
-            const w = weeklyGames.find(g => g.id === editingId);
-            if (w) { w.title = name; w.hours = hours; w.rating = rating; w.notes = notes; w.date = date; }
-        } else {
-            weeklyGames.push({ id: crypto.randomUUID(), date, title: name, hours, rating, notes });
-        }
-        saveWeekly(); closeModal(); renderWeekly(); renderWeeklyStats();
-        toast(editingId ? 'Eintrag aktualisiert' : 'Eintrag hinzugefügt');
-        return;
-    }
-
-    if (mode === 'weekends') {
-        const location = document.getElementById('formAppId').value.trim();
-        const special  = document.getElementById('formNotes').value.trim();
-        const dateLabel = document.getElementById('formDate').value.trim();
-        const yearMatch = dateLabel.match(/(\d{4})/);
-        const monthMatch = dateLabel.match(/(\d{2})\.(\d{2})\./);
-        const date = yearMatch ? `${yearMatch[1]}/${monthMatch ? monthMatch[2] : '01'}` : new Date().toISOString().slice(0,7).replace('-','/');
-        if (editingId) {
-            const w = weekendGames.find(g => g.id === editingId);
-            if (w) { w.title = name; w.location = location; w.special = special; w.dateLabel = dateLabel; w.date = date; }
-        } else {
-            weekendGames.push({ id: crypto.randomUUID(), date, dateLabel, title: name, location, special });
-        }
-        saveWeekends(); closeModal(); renderWeekends(); renderWeekendsStats();
-        toast(editingId ? 'Eintrag aktualisiert' : 'Eintrag hinzugefügt');
-        return;
-    }
-
-    const appid    = parseInt(document.getElementById('formAppId').value) || null;
-    const category = document.getElementById('formCategory').value;
-    const status   = document.getElementById('formStatus').value;
-    const notes    = document.getElementById('formNotes').value.trim();
-    const xgp      = document.getElementById('formPlatformXgp').checked;
-    const platform = document.getElementById('formPlatformEpic').checked ? 'epic'
-                   : document.getElementById('formPlatformGog').checked  ? 'gog'
+function saveWatchlistEntry() {
+    const name = document.getElementById('wlName').value.trim();
+    if (!name) { toast(t('toast_name_required')); return; }
+    const appid    = parseInt(document.getElementById('wlAppId').value) || null;
+    const category = document.getElementById('wlCategory').value;
+    const status   = document.getElementById('wlStatus').value;
+    const notes    = document.getElementById('wlNotes').value.trim();
+    const xgp      = document.getElementById('wlPlatformXgp').checked;
+    const platform = document.getElementById('wlPlatformEpic').checked ? 'epic'
+                   : document.getElementById('wlPlatformGog').checked  ? 'gog'
                    : 'steam';
     if (editingId) {
         const game = games.find(g => g.id === editingId);
@@ -1644,7 +1699,41 @@ function saveGame() {
         });
     }
     saveGames(); closeModal(); renderTabs(); renderGames(); renderStats();
-    toast(editingId ? 'Spiel aktualisiert' : 'Spiel hinzugefügt');
+    toast(editingId ? t('toast_updated') : t('toast_added'));
+}
+
+function saveWeeklyEntry() {
+    const name = document.getElementById('wkName').value.trim();
+    if (!name) { toast(t('toast_name_required')); return; }
+    const date   = document.getElementById('wkDate').value || new Date().toISOString().slice(0,10);
+    const hours  = parseFloat(document.getElementById('wkHours').value) || null;
+    const rating = parseInt(document.getElementById('wkRating').value) || null;
+    const notes  = document.getElementById('wkNotes').value.trim();
+    if (editingId) {
+        const w = weeklyGames.find(g => g.id === editingId);
+        if (w) { w.title = name; w.date = date; w.hours = hours; w.rating = rating; w.notes = notes; }
+    } else {
+        weeklyGames.push({ id: crypto.randomUUID(), date, title: name, hours, rating, notes });
+    }
+    saveWeekly(); closeModal(); renderWeekly(); renderWeeklyStats();
+    toast(editingId ? t('toast_updated') : t('toast_added'));
+}
+
+function saveWeekendEntry() {
+    const name = document.getElementById('weTitle').value.trim();
+    if (!name) { toast(t('toast_name_required')); return; }
+    const dateStart = document.getElementById('weDateStart').value || '';
+    const dateEnd   = document.getElementById('weDateEnd').value || '';
+    const location  = document.getElementById('weLocation').value;
+    const special   = document.getElementById('weSpecial').value.trim();
+    if (editingId) {
+        const w = weekendGames.find(g => g.id === editingId);
+        if (w) { w.title = name; w.dateStart = dateStart; w.dateEnd = dateEnd; w.location = location; w.special = special; }
+    } else {
+        weekendGames.push({ id: crypto.randomUUID(), dateStart, dateEnd, title: name, location, special });
+    }
+    saveWeekends(); closeModal(); renderWeekends(); renderWeekendsStats();
+    toast(editingId ? t('toast_updated') : t('toast_added'));
 }
 
 function deleteGame(id) {
@@ -1714,7 +1803,7 @@ function renderWeeklyStats() {
     const totalHours = weeklyGames.reduce((s, g) => s + (g.hours || 0), 0);
     const withHours  = weeklyGames.filter(g => g.hours).length;
     const avgHours   = withHours > 0 ? Math.round(totalHours / withHours) : 0;
-    const years = new Set(weeklyGames.map(g => g.date?.split('/')[0])).size;
+    const years = new Set(weeklyGames.map(g => g.date?.split('-')[0])).size;
     document.getElementById('stats-weekly').innerHTML = `
         <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">${t('stat_games')}</div></div>
         <div class="stat"><div class="stat-value">${Math.round(totalHours)}</div><div class="stat-label">${t('stat_total_hours')}</div></div>
@@ -1739,7 +1828,7 @@ function renderWeekly() {
         return dir * (a.date||'').localeCompare(b.date||'');
     });
     document.getElementById('weeklyTableBody').innerHTML = filtered.map(g => `<tr onclick="editWeekly('${g.id}')">
-        <td>${escHtml(g.date||'')}</td>
+        <td>${g.date ? new Date(g.date+'T00:00:00').toLocaleDateString(currentLang === 'de' ? 'de-DE' : 'en-GB') : '—'}</td>
         <td><strong>${escHtml(g.title)}</strong></td>
         <td>${g.hours ? g.hours+'h' : '—'}</td>
         <td>${getRatingBadge(g.rating)}</td>
@@ -1761,6 +1850,18 @@ function getRatingBadge(rating) {
     return `<span class="badge" style="background:${color};color:#fff" title="${label}">${n}</span>`;
 }
 
+function formatWeekendDate(dateStart, dateEnd) {
+    if (!dateStart) return '—';
+    const fmt = d => { const p = d.split('-'); return `${p[2]}.${p[1]}.${p[0]}`; };
+    const fmtShort = d => { const p = d.split('-'); return `${p[2]}.${p[1]}.`; };
+    if (!dateEnd) return fmt(dateStart);
+    const [sy, sm] = dateStart.split('-');
+    const [ey, em] = dateEnd.split('-');
+    if (sy === ey && sm === em) return `${fmtShort(dateStart)} – ${fmt(dateEnd)}`;
+    if (sy === ey) return `${fmtShort(dateStart)} – ${fmt(dateEnd)}`;
+    return `${fmt(dateStart)} – ${fmt(dateEnd)}`;
+}
+
 function sortWeeklyBy(col) {
     if (weeklySortCol === col) weeklySortDir = weeklySortDir === 'asc' ? 'desc' : 'asc';
     else { weeklySortCol = col; weeklySortDir = col === 'date' ? 'desc' : 'asc'; }
@@ -1771,22 +1872,13 @@ function editWeekly(id) {
     const g = weeklyGames.find(g => g.id === id);
     if (!g) return;
     editingId = id;
-    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
-    document.getElementById('modalTitle').textContent = t('modal_edit_weekly');
-    document.getElementById('formField2Label').textContent = t('modal_hours');
-    document.getElementById('formField3Label').textContent = t('modal_date');
-    document.getElementById('formStatusGroup').style.display = 'none';
-    document.getElementById('formPlatformGroup').style.display = 'none';
-    document.getElementById('formCategory').style.display = 'none';
-    document.getElementById('formRatingGroup').style.display = '';
-    document.getElementById('formDate').style.display = '';
-    document.getElementById('formName').value   = g.title;
-    document.getElementById('formAppId').value  = g.hours || '';
-    document.getElementById('formRating').value = g.rating != null ? String(g.rating) : '';
-    document.getElementById('formNotes').value  = g.notes || '';
-    document.getElementById('formDate').value   = g.date || '';
-    document.getElementById('modal').dataset.mode = 'weekly';
-    document.getElementById('modal').classList.add('active');
+    document.getElementById('modalWeeklyTitle').textContent = t('modal_edit_weekly');
+    document.getElementById('wkName').value   = g.title;
+    document.getElementById('wkDate').value   = g.date || '';
+    document.getElementById('wkHours').value  = g.hours || '';
+    document.getElementById('wkRating').value = g.rating != null ? String(g.rating) : '';
+    document.getElementById('wkNotes').value  = g.notes || '';
+    document.getElementById('modalWeekly').classList.add('active');
 }
 
 function deleteWeekly(id) {
@@ -1800,7 +1892,7 @@ function deleteWeekly(id) {
 // ==================== WEEKENDS ====================
 function renderWeekendsStats() {
     const total  = weekendGames.filter(g => !g.title.includes('Ausfall')).length;
-    const years  = new Set(weekendGames.map(g => g.date?.split('/')[0])).size;
+    const years  = new Set(weekendGames.map(g => g.dateStart?.split('-')[0])).size;
     const atFirst  = weekendGames.filter(g => g.location === weekendGames.find(x=>x.location)?.location).length;
     const locations = [...new Set(weekendGames.map(g => g.location).filter(Boolean))];
     const statsHtml = `
@@ -1829,16 +1921,16 @@ function renderWeekends() {
     filtered.sort((a, b) => {
         if (weekendsSortCol === 'title')    return dir * a.title.localeCompare(b.title);
         if (weekendsSortCol === 'location') return dir * (a.location||'').localeCompare(b.location||'');
-        return dir * (a.date||'').localeCompare(b.date||'');
+        return dir * (a.dateStart||'').localeCompare(b.dateStart||'');
     });
-    document.getElementById('weekendsTableBody').innerHTML = filtered.map(g => `<tr>
-        <td>${escHtml(g.dateLabel || g.date || '')}</td>
+    document.getElementById('weekendsTableBody').innerHTML = filtered.map(g => `<tr onclick="editWeekend('${g.id}')">
+        <td>${formatWeekendDate(g.dateStart, g.dateEnd)}</td>
         <td><strong>${escHtml(g.title)}</strong></td>
-        <td><i class="bi bi-house"></i> ${escHtml(g.location||'')}</td>
+        <td>${g.location ? `<i class="bi bi-house"></i> ${escHtml(g.location)}` : '—'}</td>
         <td><small style="color:var(--text-dim)">${escHtml(g.special||'')}</small></td>
         <td>
-            <button class="btn btn-sm" onclick="editWeekend('${g.id}')"><i class="bi bi-pencil"></i></button>
-            <button class="btn btn-sm" onclick="deleteWeekend('${g.id}')"><i class="bi bi-trash3"></i></button>
+            <button class="btn btn-sm" onclick="event.stopPropagation(); editWeekend('${g.id}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm" onclick="event.stopPropagation(); deleteWeekend('${g.id}')"><i class="bi bi-trash3"></i></button>
         </td>
     </tr>`).join('');
 }
@@ -1853,19 +1945,13 @@ function editWeekend(id) {
     const g = weekendGames.find(g => g.id === id);
     if (!g) return;
     editingId = id;
-    document.querySelectorAll('.modal-body .form-group').forEach(el => el.style.display = '');
-    document.getElementById('modalTitle').textContent = t('modal_edit_weekend');
-    document.getElementById('formField2Label').textContent = t('th_location');
-    document.getElementById('formField3Label').textContent = t('modal_date');
-    document.getElementById('formStatusGroup').style.display = 'none';
-    document.getElementById('formCategory').style.display = 'none';
-    document.getElementById('formDate').style.display = '';
-    document.getElementById('formName').value  = g.title;
-    document.getElementById('formAppId').value = g.location || '';
-    document.getElementById('formNotes').value = g.special || '';
-    document.getElementById('formDate').value  = g.dateLabel || g.date || '';
-    document.getElementById('modal').dataset.mode = 'weekends';
-    document.getElementById('modal').classList.add('active');
+    document.getElementById('modalWeekendTitle').textContent = t('modal_edit_weekend');
+    document.getElementById('weTitle').value     = g.title;
+    document.getElementById('weDateStart').value = g.dateStart || '';
+    document.getElementById('weDateEnd').value   = g.dateEnd || '';
+    document.getElementById('weLocation').value  = g.location || '';
+    document.getElementById('weSpecial').value   = g.special || '';
+    document.getElementById('modalWeekend').classList.add('active');
 }
 
 function deleteWeekend(id) {
@@ -1877,7 +1963,6 @@ function deleteWeekend(id) {
 }
 
 // ==================== KEYBOARD / EVENTS ====================
-document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
     if (e.key === 'n' && e.ctrlKey) { e.preventDefault(); openAddModal(); }
