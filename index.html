@@ -564,6 +564,63 @@ tr.row-inactive:hover { opacity: 0.75; }
 }
 .topnav-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
 .topnav-item.active { color: #fff; border-bottom-color: #fff; background: rgba(255,255,255,0.08); }
+
+/* Activity panel */
+.activity-panel {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+    display: none;
+    position: relative;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+.activity-panel.active { display: block; }
+.activity-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+.activity-day { font-size: 0.72rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.8rem; margin-bottom: 0.3rem; padding-bottom: 0.2rem; border-bottom: 1px solid var(--border); }
+.activity-day:first-child { margin-top: 0; }
+.activity-entry { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.35rem 0; font-size: 0.8rem; }
+.activity-entry .activity-icon { width: 1.2rem; text-align: center; flex-shrink: 0; margin-top: 0.1rem; }
+.activity-entry .activity-icon.act-added { color: var(--green); }
+.activity-entry .activity-icon.act-edited { color: var(--blue); }
+.activity-entry .activity-icon.act-deleted { color: var(--red); }
+.activity-entry .activity-icon.act-status { color: var(--yellow); }
+.activity-entry .activity-user { font-weight: 600; color: var(--accent); }
+.activity-entry .activity-time { color: var(--text-dim); font-size: 0.72rem; margin-left: auto; white-space: nowrap; flex-shrink: 0; }
+.activity-entry .activity-detail { color: var(--text-dim); font-size: 0.75rem; }
+.activity-unseen { background: rgba(200,154,24,0.08); border-radius: 4px; padding: 0.35rem 0.4rem; margin: 0 -0.4rem; }
+.dark .activity-unseen { background: rgba(212,168,32,0.1); }
+@media (prefers-color-scheme: dark) { :root:not(.light) .activity-unseen { background: rgba(212,168,32,0.1); } }
+.activity-empty { text-align: center; padding: 1.5rem; color: var(--text-dim); font-size: 0.85rem; }
+.activity-footer { margin-top: 0.8rem; padding-top: 0.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; text-align: center; }
+
+/* Bell badge */
+.btn-bell { position: relative; }
+.badge-notif {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #d44858;
+    color: #fff;
+    font-size: 0.6rem;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0 3px;
+}
+
+/* New/changed row highlight */
+.row-new td:first-child { border-left: 3px solid var(--accent); }
 </style>
 </head>
 <body>
@@ -583,6 +640,7 @@ tr.row-inactive:hover { opacity: 0.75; }
     <div class="header-actions">
         <span id="headerSyncStatus" style="font-size:0.72rem;color:rgba(255,255,255,0.55);align-self:center;margin-right:0.25rem"></span>
         <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> <span data-i18n="btn_add">Hinzufügen</span></button>
+        <button class="btn btn-bell" onclick="toggleActivity()" title="Activity"><i class="bi bi-bell"></i><span id="activityBadge" class="badge-notif" style="display:none">0</span></button>
         <button class="btn" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
         <button class="btn" id="btnExport" onclick="exportData()"><i class="bi bi-download"></i> Export</button>
         <button class="btn" id="btnImport" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Import</button>
@@ -634,6 +692,22 @@ tr.row-inactive:hover { opacity: 0.75; }
         <span id="syncStatus" style="font-size:0.78rem"></span>
     </div>
     <div style="margin-top:0.8rem; font-size:0.72rem; color:var(--text-dim)" id="appVersion"></div>
+</div>
+
+<div class="activity-panel" id="activityPanel">
+    <button class="settings-close" onclick="closeActivity()" title="Schließen"><i class="bi bi-x-lg"></i></button>
+    <div class="activity-panel-header">
+        <h3><i class="bi bi-bell"></i> <span data-i18n="activity_title">Letzte Änderungen</span></h3>
+        <select id="activityFilter" onchange="renderActivity()" style="font-size:0.75rem;padding:0.2rem 0.4rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);margin-right:2.5rem">
+            <option value="all" data-i18n="activity_filter_all">Alle</option>
+            <option value="unseen" data-i18n="activity_filter_new">Seit letztem Besuch</option>
+            <option value="others" data-i18n="activity_filter_others">Nur andere</option>
+        </select>
+    </div>
+    <div id="activityList"></div>
+    <div class="activity-footer">
+        <a id="gistHistoryLink" href="#" target="_blank"><i class="bi bi-clock-history"></i> <span data-i18n="activity_gist_history">Vollständige Gist-Historie auf GitHub</span></a>
+    </div>
 </div>
 
 <div id="view-watchlist">
@@ -909,7 +983,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.8.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -921,6 +995,8 @@ const USER_NAME_KEY      = 'coop_tracker_username';
 const THEME_KEY          = 'coop_tracker_theme';
 const LANG_KEY           = 'coop_tracker_lang';
 const GIST_FILE          = 'coop_games_data.json';
+const LAST_VISIT_KEY     = 'coop_tracker_last_visit';
+const CHANGELOG_KEY      = 'coop_tracker_changelog';
 
 // ==================== i18n ====================
 const STRINGS = {
@@ -988,6 +1064,18 @@ const STRINGS = {
     modal_platform_epic: 'Epic Games Store',
     modal_platform_gog: 'GOG',
     modal_platform_hint: 'Standard: Steam. Nur abweichende Plattformen ankreuzen.',
+    activity_title: 'Letzte Änderungen',
+    activity_filter_all: 'Alle',
+    activity_filter_new: 'Seit letztem Besuch',
+    activity_filter_others: 'Nur andere',
+    activity_gist_history: 'Vollständige Gist-Historie auf GitHub',
+    activity_empty: 'Keine Änderungen vorhanden.',
+    activity_today: 'Heute',
+    activity_yesterday: 'Gestern',
+    activity_action_added: 'hat hinzugefügt:',
+    activity_action_edited: 'hat bearbeitet:',
+    activity_action_deleted: 'hat gelöscht:',
+    activity_action_status: 'hat Status geändert:',
   },
   en: {
     btn_add: 'Add',
@@ -1053,6 +1141,18 @@ const STRINGS = {
     modal_platform_epic: 'Epic Games Store',
     modal_platform_gog: 'GOG',
     modal_platform_hint: 'Default: Steam. Only check non-Steam platforms.',
+    activity_title: 'Recent Changes',
+    activity_filter_all: 'All',
+    activity_filter_new: 'Since last visit',
+    activity_filter_others: 'Others only',
+    activity_gist_history: 'Full Gist history on GitHub',
+    activity_empty: 'No changes recorded.',
+    activity_today: 'Today',
+    activity_yesterday: 'Yesterday',
+    activity_action_added: 'added:',
+    activity_action_edited: 'edited:',
+    activity_action_deleted: 'deleted:',
+    activity_action_status: 'changed status:',
   }
 };
 
@@ -1204,6 +1304,8 @@ const STEAM_STATUS_LABELS = {
 let games        = [];
 let weeklyGames  = [];
 let weekendGames = [];
+let changelog    = [];
+let _unseenItemIds = new Set();
 let activeView   = 'watchlist';
 let editingId          = null;
 let currentSortColumn  = 'name';
@@ -1228,6 +1330,7 @@ function showSettings() {
     document.getElementById('settingLang').value     = localStorage.getItem(LANG_KEY) || 'auto';
     document.getElementById('appVersion').textContent = `v${APP_VERSION}`;
     const panel = document.getElementById('settingsPanel');
+    document.getElementById('activityPanel').classList.remove('active');
     panel.classList.add('active');
     document.getElementById('configPrompt').style.display = 'none';
 }
@@ -1237,6 +1340,7 @@ function toggleSettings() {
     if (panel.classList.contains('active')) {
         closeSettings();
     } else {
+        document.getElementById('activityPanel').classList.remove('active');
         showSettings();
     }
 }
@@ -1311,8 +1415,10 @@ async function syncFromGist() {
         if (data.watchlist)  { games        = data.watchlist;  localStorage.setItem(STORAGE_KEY, JSON.stringify(games)); }
         if (data.weekly)     { weeklyGames  = data.weekly;     localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); }
         if (data.weekends)   { weekendGames = data.weekends;   localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); }
+        if (data.changelog)  { changelog    = data.changelog;  localStorage.setItem(CHANGELOG_KEY, JSON.stringify(changelog)); }
         migrateWeeklyDates();
         migrateWeekendDates();
+        computeUnseenIds();
         // Hide config prompt, re-render
         document.getElementById('configPrompt').style.display = 'none';
         renderAll();
@@ -1337,6 +1443,7 @@ async function syncToGist() {
         watchlist: games,
         weekly: weeklyGames,
         weekends: weekendGames,
+        changelog: changelog,
     };
     try {
         await saveToGist(payload);
@@ -1385,6 +1492,7 @@ function loadFromLocalStorage() {
     try { games        = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { games = []; }
     try { weeklyGames  = JSON.parse(localStorage.getItem(STORAGE_KEY_WEEKLY) || '[]'); } catch(e) { weeklyGames = []; }
     try { weekendGames = JSON.parse(localStorage.getItem(STORAGE_KEY_WEEKENDS) || '[]'); } catch(e) { weekendGames = []; }
+    try { changelog    = JSON.parse(localStorage.getItem(CHANGELOG_KEY) || '[]'); } catch(e) { changelog = []; }
     migrateWeeklyDates();
     migrateWeekendDates();
 }
@@ -1398,6 +1506,103 @@ function saveLocal() {
 function saveGames()   { saveLocal(); syncToGist(); }
 function saveWeekly()  { localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); syncToGist(); }
 function saveWeekends(){ localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); syncToGist(); }
+
+// ==================== CHANGELOG ====================
+function addChangelogEntry(action, view, item, itemId, detail) {
+    changelog.push({
+        ts: new Date().toISOString(),
+        user: getUserName(),
+        action, view, item,
+        itemId: itemId || '',
+        detail: detail || ''
+    });
+    if (changelog.length > 200) changelog = changelog.slice(-200);
+    localStorage.setItem(CHANGELOG_KEY, JSON.stringify(changelog));
+}
+
+function getUnseenEntries() {
+    const lastVisit = localStorage.getItem(LAST_VISIT_KEY) || '1970-01-01T00:00:00Z';
+    const myName = getUserName();
+    return changelog.filter(e => e.ts > lastVisit && e.user !== myName);
+}
+
+function computeUnseenIds() {
+    const unseen = getUnseenEntries();
+    _unseenItemIds = new Set(unseen.map(e => e.itemId).filter(Boolean));
+    renderActivityBadge();
+}
+
+function renderActivityBadge() {
+    const count = getUnseenEntries().length;
+    const badge = document.getElementById('activityBadge');
+    if (!badge) return;
+    if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : String(count);
+        badge.style.display = '';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function toggleActivity() {
+    const panel = document.getElementById('activityPanel');
+    if (panel.classList.contains('active')) {
+        closeActivity();
+    } else {
+        document.getElementById('settingsPanel').classList.remove('active');
+        panel.classList.add('active');
+        renderActivity();
+        const gistId = getGistId();
+        const link = document.getElementById('gistHistoryLink');
+        if (link && gistId) link.href = `https://gist.github.com/${gistId}/revisions`;
+    }
+}
+
+function closeActivity() {
+    document.getElementById('activityPanel').classList.remove('active');
+    localStorage.setItem(LAST_VISIT_KEY, new Date().toISOString());
+    _unseenItemIds = new Set();
+    renderActivityBadge();
+    renderAll();
+}
+
+function renderActivity() {
+    const filter = document.getElementById('activityFilter')?.value || 'all';
+    const lastVisit = localStorage.getItem(LAST_VISIT_KEY) || '1970-01-01T00:00:00Z';
+    const myName = getUserName();
+    let entries = [...changelog].reverse();
+    if (filter === 'unseen') entries = entries.filter(e => e.ts > lastVisit);
+    if (filter === 'others') entries = entries.filter(e => e.user !== myName);
+    if (entries.length === 0) {
+        document.getElementById('activityList').innerHTML = `<div class="activity-empty"><i class="bi bi-check-circle"></i> ${t('activity_empty')}</div>`;
+        return;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+    const groups = {};
+    for (const e of entries) {
+        const day = e.ts.slice(0, 10);
+        const label = day === today ? t('activity_today') : day === yesterday ? t('activity_yesterday') : new Date(day).toLocaleDateString(currentLang === 'de' ? 'de-DE' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        if (!groups[label]) groups[label] = [];
+        groups[label].push(e);
+    }
+    const icons = { added: ['bi-plus-circle-fill','act-added'], edited: ['bi-pencil-fill','act-edited'], deleted: ['bi-trash3-fill','act-deleted'], status: ['bi-arrow-repeat','act-status'] };
+    let html = '';
+    for (const [day, dayEntries] of Object.entries(groups)) {
+        html += `<div class="activity-day">${escHtml(day)}</div>`;
+        for (const e of dayEntries) {
+            const [icon, cls] = icons[e.action] || icons.edited;
+            const time = new Date(e.ts).toLocaleTimeString(currentLang === 'de' ? 'de-DE' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+            const isUnseen = e.ts > lastVisit && e.user !== myName;
+            html += `<div class="activity-entry${isUnseen ? ' activity-unseen' : ''}">
+                <span class="activity-icon ${cls}"><i class="bi ${icon}"></i></span>
+                <span><span class="activity-user">${escHtml(e.user)}</span> ${t('activity_action_' + e.action)} <strong>${escHtml(e.item)}</strong>${e.detail ? ` <span class="activity-detail">(${escHtml(e.detail)})</span>` : ''}</span>
+                <span class="activity-time">${time}</span>
+            </div>`;
+        }
+    }
+    document.getElementById('activityList').innerHTML = html;
+}
 
 // Migrate weekly: date from YYYY/MM to ISO YYYY-MM-01
 function migrateWeeklyDates() {
@@ -1458,6 +1663,7 @@ function init() {
     }
     // Load local cache immediately for instant display
     loadFromLocalStorage();
+    computeUnseenIds();
     if (games.length > 0) {
         document.getElementById('configPrompt').style.display = 'none';
         renderAll();
@@ -1561,7 +1767,8 @@ function renderGames() {
         if (game.platform === 'gog')  platforms.push(`<span class="badge badge-gog">${t('platform_gog')}</span>`);
         const platformHtml = platforms.join(' ') || '';
         const inactiveClass = ['played','abandoned','obsolete'].includes(game.status) ? ' row-inactive' : '';
-        return `<tr class="${inactiveClass}" onclick="openEditModal('${game.id}')">
+        const newClass = _unseenItemIds.has(game.id) ? ' row-new' : '';
+        return `<tr class="${inactiveClass}${newClass}" onclick="openEditModal('${game.id}')">
             <td>${noAppIdIcon}${steamLink}${notesHtml}</td>
             <td><small>${catLabel}</small></td>
             <td><span class="badge ${statusInfo.class}">${statusLabel}</span></td>
@@ -1740,6 +1947,7 @@ function saveWatchlistEntry() {
             steam: { price: '', review_pct: null, review_count: 0, steam_status: 'unknown', release_date: '', is_ea: false }
         });
     }
+    addChangelogEntry(editingId ? 'edited' : 'added', 'watchlist', name, editingId || games[games.length-1].id);
     saveGames(); closeModal(); renderGames(); renderStats();
     toast(editingId ? t('toast_updated') : t('toast_added'));
 }
@@ -1757,6 +1965,7 @@ function saveWeeklyEntry() {
     } else {
         weeklyGames.push({ id: crypto.randomUUID(), date, title: name, hours, rating, notes });
     }
+    addChangelogEntry(editingId ? 'edited' : 'added', 'weekly', name, editingId || weeklyGames[weeklyGames.length-1].id);
     saveWeekly(); closeModal(); renderWeekly(); renderWeeklyStats();
     toast(editingId ? t('toast_updated') : t('toast_added'));
 }
@@ -1774,6 +1983,7 @@ function saveWeekendEntry() {
     } else {
         weekendGames.push({ id: crypto.randomUUID(), dateStart, dateEnd, title: name, location, special });
     }
+    addChangelogEntry(editingId ? 'edited' : 'added', 'weekends', name, editingId || weekendGames[weekendGames.length-1].id);
     saveWeekends(); closeModal(); renderWeekends(); renderWeekendsStats();
     toast(editingId ? t('toast_updated') : t('toast_added'));
 }
@@ -1781,6 +1991,7 @@ function saveWeekendEntry() {
 function deleteGame(id) {
     const game = games.find(g => g.id === id);
     if (!game || !confirm(`"${game.name}" wirklich löschen?`)) return;
+    addChangelogEntry('deleted', 'watchlist', game.name, id);
     games = games.filter(g => g.id !== id);
     saveGames(); renderGames(); renderStats();
     toast('Spiel gelöscht');
@@ -1788,7 +1999,7 @@ function deleteGame(id) {
 
 // ==================== IMPORT / EXPORT ====================
 function exportData() {
-    const data = JSON.stringify({ watchlist: games, weekly: weeklyGames, weekends: weekendGames }, null, 2);
+    const data = JSON.stringify({ watchlist: games, weekly: weeklyGames, weekends: weekendGames, changelog }, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -1808,8 +2019,9 @@ function importData(event) {
                 games = imported; saveGames();
             } else if (imported.watchlist) {
                 games = imported.watchlist; saveGames();
-                if (imported.weekly)   { weeklyGames  = imported.weekly;   saveWeekly(); }
-                if (imported.weekends) { weekendGames = imported.weekends; saveWeekends(); }
+                if (imported.weekly)    { weeklyGames  = imported.weekly;    saveWeekly(); }
+                if (imported.weekends)  { weekendGames = imported.weekends;  saveWeekends(); }
+                if (imported.changelog) { changelog    = imported.changelog;  localStorage.setItem(CHANGELOG_KEY, JSON.stringify(changelog)); }
             } else { throw new Error('Ungültiges Format'); }
             renderAll();
             toast('Import erfolgreich');
@@ -1869,7 +2081,7 @@ function renderWeekly() {
         if (weeklySortCol === 'title') return dir * a.title.localeCompare(b.title);
         return dir * (a.date||'').localeCompare(b.date||'');
     });
-    document.getElementById('weeklyTableBody').innerHTML = filtered.map(g => `<tr onclick="editWeekly('${g.id}')">
+    document.getElementById('weeklyTableBody').innerHTML = filtered.map(g => `<tr onclick="editWeekly('${g.id}')"${_unseenItemIds.has(g.id) ? ' class="row-new"' : ''}>
         <td>${g.date ? new Date(g.date+'T00:00:00').toLocaleDateString(currentLang === 'de' ? 'de-DE' : 'en-GB') : '—'}</td>
         <td><strong>${escHtml(g.title)}</strong></td>
         <td>${g.hours ? g.hours+'h' : '—'}</td>
@@ -1926,6 +2138,7 @@ function editWeekly(id) {
 function deleteWeekly(id) {
     const g = weeklyGames.find(g => g.id === id);
     if (!g || !confirm(`"${g.title}" wirklich löschen?`)) return;
+    addChangelogEntry('deleted', 'weekly', g.title, id);
     weeklyGames = weeklyGames.filter(g => g.id !== id);
     saveWeekly(); renderWeekly(); renderWeeklyStats();
     toast('Eintrag gelöscht');
@@ -1965,7 +2178,7 @@ function renderWeekends() {
         if (weekendsSortCol === 'location') return dir * (a.location||'').localeCompare(b.location||'');
         return dir * (a.dateStart||'').localeCompare(b.dateStart||'');
     });
-    document.getElementById('weekendsTableBody').innerHTML = filtered.map(g => `<tr onclick="editWeekend('${g.id}')">
+    document.getElementById('weekendsTableBody').innerHTML = filtered.map(g => `<tr onclick="editWeekend('${g.id}')"${_unseenItemIds.has(g.id) ? ' class="row-new"' : ''}>
         <td>${formatWeekendDate(g.dateStart, g.dateEnd)}</td>
         <td><strong>${escHtml(g.title)}</strong></td>
         <td>${g.location ? `<i class="bi bi-house"></i> ${escHtml(g.location)}` : '—'}</td>
@@ -1999,6 +2212,7 @@ function editWeekend(id) {
 function deleteWeekend(id) {
     const g = weekendGames.find(g => g.id === id);
     if (!g || !confirm(`"${g.title}" wirklich löschen?`)) return;
+    addChangelogEntry('deleted', 'weekends', g.title, id);
     weekendGames = weekendGames.filter(g => g.id !== id);
     saveWeekends(); renderWeekends(); renderWeekendsStats();
     toast('Eintrag gelöscht');
