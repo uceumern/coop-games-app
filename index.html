@@ -983,7 +983,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.8.1';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -1728,6 +1728,7 @@ function renderGames() {
                 const o = {candidate:0,played:1,'wait-ea':2,abandoned:3,obsolete:4};
                 return dir * ((o[a.status]??9) - (o[b.status]??9));
             }
+            case 'added': return dir * ((a.added||'').localeCompare(b.added||''));
             default: return dir * a.name.localeCompare(b.name);
         }
     });
@@ -1860,7 +1861,7 @@ document.addEventListener('click', e => {
 
 function sortByColumn(col) {
     if (currentSortColumn === col) currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
-    else { currentSortColumn = col; currentSortDir = (col === 'review_pct' || col === 'review_count') ? 'desc' : 'asc'; }
+    else { currentSortColumn = col; currentSortDir = (col === 'review_pct' || col === 'review_count' || col === 'added') ? 'desc' : 'asc'; }
     updateSortArrows();
     renderGames();
 }
