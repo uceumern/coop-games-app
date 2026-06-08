@@ -27,7 +27,7 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 **Gist data shape:**
 ```json
 {
-  "watchlist": [{ "id", "name", "appid", "category", "status", "xgp", "platform", "notes", "added", "steam": { "steam_status", "price", "review_pct", "review_count", "steam_updated" } }],
+  "watchlist": [{ "id", "name", "appid", "status", "favorite", "xgp", "platform", "notes", "added", "steam": { "steam_status", "price", "review_pct", "review_count", "steam_updated" } }],
   "weekly":    [{ "id", "date", "title", "hours", "rating", "notes" }],
   "weekends":  [{ "id", "dateStart", "dateEnd", "title", "location", "special" }],
   "lastModified": "<ISO timestamp>",
@@ -43,7 +43,7 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 
 **Status enums:**
 - `steam_status`: `released` | `ea` | `unreleased` | `unknown`
-- `user_status` (game.status): `candidate` | `played` | `wait-ea` | `abandoned` | `obsolete`
+- `user_status` (game.status): `candidate` | `played` | `replay` | `abandoned`
 
 **CSS variables** are defined in `:root` — color scheme derived from a heraldic coat of arms (shield blue `#1a4268`, gold `#c89a18`, silver `#bcd0e0`). Responsive breakpoints at `768px` and `540px`.
 

@@ -259,13 +259,16 @@ tr.row-inactive:hover { opacity: 0.75; }
 .badge-unreleased { background: #b8cede; color: #253a50; }
 .badge-notfound { background: #ccd8e0; color: #3a4e5a; }
 .badge-played { background: #b8ddc0; color: #0f4020; }
+.badge-replay { background: #d4c8f0; color: #3a1a6a; }
 .badge-abandoned { background: #f0b8be; color: #5a0c14; }
-.badge-obsolete { background: #b8cede; color: #253a50; }
-.badge-wait-ea { background: #f5dfa0; color: #5a3c00; }
 .badge-candidate { background: #a8c8e8; color: #0a2848; }
 .badge-xgp { background: #107c10; color: #fff; }
 .badge-epic { background: #2a2a2a; color: #fff; }
 .badge-gog { background: #8b4513; color: #fff; }
+/* Favorite star */
+.fav-star { cursor: pointer; font-size: 1rem; color: var(--border); transition: color 0.15s; }
+.fav-star:hover { color: var(--accent); }
+.fav-star.active { color: var(--accent); }
 /* Dark mode badge overrides */
 .dark .badge-released, @media (prefers-color-scheme: dark) { :root:not(.light) .badge-released { background: #1a4a2a; color: #7ddfa0; } }
 .dark .badge-released { background: #1a4a2a; color: #7ddfa0; }
@@ -273,9 +276,8 @@ tr.row-inactive:hover { opacity: 0.75; }
 .dark .badge-unreleased { background: #1a3448; color: #8ab8d8; }
 .dark .badge-notfound { background: #1e2e3e; color: #6a8aa0; }
 .dark .badge-played { background: #1a4a2a; color: #7ddfa0; }
+.dark .badge-replay { background: #2a1a4a; color: #c4a8f0; }
 .dark .badge-abandoned { background: #4a1018; color: #f09098; }
-.dark .badge-obsolete { background: #1a3448; color: #8ab8d8; }
-.dark .badge-wait-ea { background: #4a3800; color: #f5c842; }
 .dark .badge-candidate { background: #0a2848; color: #7ab8e8; }
 .dark .badge-xgp { background: #0a5a0a; color: #7ddf7d; }
 .dark .badge-epic { background: #1a1a1a; color: #c8c8c8; }
@@ -286,9 +288,8 @@ tr.row-inactive:hover { opacity: 0.75; }
     :root:not(.light) .badge-unreleased { background: #1a3448; color: #8ab8d8; }
     :root:not(.light) .badge-notfound { background: #1e2e3e; color: #6a8aa0; }
     :root:not(.light) .badge-played { background: #1a4a2a; color: #7ddfa0; }
+    :root:not(.light) .badge-replay { background: #2a1a4a; color: #c4a8f0; }
     :root:not(.light) .badge-abandoned { background: #4a1018; color: #f09098; }
-    :root:not(.light) .badge-obsolete { background: #1a3448; color: #8ab8d8; }
-    :root:not(.light) .badge-wait-ea { background: #4a3800; color: #f5c842; }
     :root:not(.light) .badge-candidate { background: #0a2848; color: #7ab8e8; }
     :root:not(.light) .badge-xgp { background: #0a5a0a; color: #7ddf7d; }
     :root:not(.light) .badge-epic { background: #1a1a1a; color: #c8c8c8; }
@@ -472,22 +473,19 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 /* Portrait mobile: column hiding + touch targets */
 @media (max-width: 540px) and (orientation: portrait) {
-    /* Watchlist: keep Game (1), Status (3), Actions (10) — hide rest */
-    #gameTableBody tr td:nth-child(2),
+    /* Watchlist: keep Fav (1), Game (2), Status (3), Actions (10) — hide rest */
     #gameTableBody tr td:nth-child(4),
     #gameTableBody tr td:nth-child(5),
     #gameTableBody tr td:nth-child(6),
     #gameTableBody tr td:nth-child(7),
     #gameTableBody tr td:nth-child(8),
     #gameTableBody tr td:nth-child(9) { display: none; }
-    .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(2),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(4),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(5),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(6),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(7),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(8),
     .game-table:has(#gameTableBody) thead tr:first-child th:nth-child(9) { display: none; }
-    .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(2),
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(4),
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(5),
     .game-table:has(#gameTableBody) thead tr.filter-row th:nth-child(6),
@@ -717,8 +715,8 @@ tr.row-inactive:hover { opacity: 0.75; }
     <table class="game-table">
         <thead>
             <tr>
+                <th onclick="sortByColumn('favorite')" id="th-favorite" style="width:2.5rem;text-align:center"><i class="bi bi-star-fill" style="color:var(--accent)"></i> <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('name')" id="th-name"><span data-i18n="th_game">Spiel</span> <span class="sort-arrow"></span></th>
-                <th onclick="sortByColumn('category')" id="th-category"><span data-i18n="th_category">Kategorie</span> <span class="sort-arrow"></span></th>
                 <th onclick="sortByColumn('user_status')" id="th-user_status"><span data-i18n="th_user_status">User Status</span> <span class="sort-arrow"></span></th>
                 <th id="th-platform"><span data-i18n="th_platform">Plattform</span></th>
                 <th onclick="sortByColumn('steam_status')" id="th-steam_status" class="col-steam-first"><span data-i18n="th_steam_status">Steam Status</span> <span class="sort-arrow"></span></th>
@@ -729,21 +727,13 @@ tr.row-inactive:hover { opacity: 0.75; }
                 <th data-i18n="th_actions">Aktionen</th>
             </tr>
             <tr class="filter-row">
-                <th><input type="text" id="filterName" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderGames()"></th>
                 <th>
-                    <select id="filterCategory" onchange="renderGames()">
-                        <option value="">Alle</option>
-                        <option value="vierer">Vierer-Runde</option>
-                        <option value="hauptliste">Hauptliste</option>
-                        <option value="neue">Neue Spiele</option>
-                        <option value="top10">Top 10</option>
-                        <option value="taktik">Taktik/Shooter</option>
-                        <option value="replay">Replay</option>
-                        <option value="maybe">Maybe</option>
-                        <option value="earlyaccess">Early Access</option>
-                        <option value="aeltere">Ältere Einträge</option>
+                    <select id="filterFavorite" onchange="renderGames()" style="width:auto;min-width:0;padding:0.2rem">
+                        <option value="">—</option>
+                        <option value="yes">★</option>
                     </select>
                 </th>
+                <th><input type="text" id="filterName" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderGames()"></th>
                 <th>
                     <button class="multi-select-btn" onclick="toggleStatusFilter()" id="statusFilterBtn">Status</button>
                 </th>
@@ -861,10 +851,6 @@ tr.row-inactive:hover { opacity: 0.75; }
             <input type="text" id="wlAppId" placeholder="e.g. 1966720">
         </div>
         <div class="form-group">
-            <label data-i18n="th_category">Kategorie</label>
-            <select id="wlCategory"></select>
-        </div>
-        <div class="form-group">
             <label data-i18n="modal_status">Status</label>
             <select id="wlStatus"></select>
         </div>
@@ -973,17 +959,16 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <div class="multi-select-panel" id="statusFilterPanel">
     <label><input type="checkbox" value="candidate" checked onchange="renderGames()"> <span data-i18n="status_candidate">Kandidat</span></label>
-    <label><input type="checkbox" value="wait-ea" checked onchange="renderGames()"> <span data-i18n="status_wait_ea">Warte EA</span></label>
     <label><input type="checkbox" value="played" onchange="renderGames()"> <span data-i18n="status_played">Gespielt</span></label>
+    <label><input type="checkbox" value="replay" checked onchange="renderGames()"> <span data-i18n="status_replay">Nochmal</span></label>
     <label><input type="checkbox" value="abandoned" onchange="renderGames()"> <span data-i18n="status_abandoned">Abgebrochen</span></label>
-    <label><input type="checkbox" value="obsolete" onchange="renderGames()"> <span data-i18n="status_obsolete">Aussortiert</span></label>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.8.1';
+const APP_VERSION = '1.9.0';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -1017,17 +1002,13 @@ const STRINGS = {
     settings_lang_de: 'Deutsch',
     settings_lang_en: 'English',
     settings_save: 'Speichern & verbinden',
-    th_game: 'Spiel', th_category: 'Kategorie', th_steam_status: 'Steam Status',
-    th_user_status: 'User Status', th_price: 'Preis', th_rating: 'Bewertung',
+    th_game: 'Spiel', th_steam_status: 'Steam Status',
+    th_user_status: 'Status', th_price: 'Preis', th_rating: 'Bewertung',
     th_reviews: 'Reviews', th_added: 'Hinzugefügt', th_actions: 'Aktionen',
     th_date: 'Datum', th_title: 'Titel', th_hours: 'Stunden',
     th_verdict: 'Fazit', th_notes: 'Bemerkung', th_location: 'Ort', th_special: 'Sonderaktion',
     filter_all: 'Alle', filter_none: 'Ohne', filter_search: 'Suche...',
-    cat_vierer: 'Vierer-Runde', cat_hauptliste: 'Hauptliste', cat_neue: 'Neue Spiele',
-    cat_top10: 'Top 10', cat_taktik: 'Taktik / Shooter', cat_replay: 'Replay',
-    cat_maybe: 'Maybe', cat_earlyaccess: 'Early Access', cat_aeltere: 'Ältere Einträge',
-    status_candidate: 'Kandidat', status_played: 'Gespielt', status_abandoned: 'Abgebrochen',
-    status_obsolete: 'Aussortiert', status_wait_ea: 'Warte EA',
+    status_candidate: 'Kandidat', status_played: 'Gespielt', status_replay: 'Nochmal', status_abandoned: 'Abgebrochen',
     steam_released: 'Released', steam_ea: 'Early Access', steam_unreleased: 'Unreleased', steam_unknown: 'Unbekannt',
     stat_total: 'Gesamt', stat_candidates: 'Kandidaten', stat_released: 'Released',
     stat_played: 'Gespielt', stat_avg_rating: 'Ø Bewertung', stat_games: 'Spiele',
@@ -1094,17 +1075,13 @@ const STRINGS = {
     settings_lang_de: 'Deutsch',
     settings_lang_en: 'English',
     settings_save: 'Save & connect',
-    th_game: 'Game', th_category: 'Category', th_steam_status: 'Steam Status',
+    th_game: 'Game', th_steam_status: 'Steam Status',
     th_user_status: 'Status', th_price: 'Price', th_rating: 'Rating',
     th_reviews: 'Reviews', th_added: 'Added', th_actions: 'Actions',
     th_date: 'Date', th_title: 'Title', th_hours: 'Hours',
     th_verdict: 'Verdict', th_notes: 'Notes', th_location: 'Location', th_special: 'Special',
     filter_all: 'All', filter_none: 'None', filter_search: 'Search...',
-    cat_vierer: 'Four-Player', cat_hauptliste: 'Main List', cat_neue: 'New Games',
-    cat_top10: 'Top 10', cat_taktik: 'Tactics / Shooter', cat_replay: 'Replay',
-    cat_maybe: 'Maybe', cat_earlyaccess: 'Early Access', cat_aeltere: 'Older Entries',
-    status_candidate: 'Candidate', status_played: 'Played', status_abandoned: 'Abandoned',
-    status_obsolete: 'Discarded', status_wait_ea: 'Wait EA',
+    status_candidate: 'Candidate', status_played: 'Played', status_replay: 'Replay', status_abandoned: 'Abandoned',
     steam_released: 'Released', steam_ea: 'Early Access', steam_unreleased: 'Unreleased', steam_unknown: 'Unknown',
     stat_total: 'Total', stat_candidates: 'Candidates', stat_released: 'Released',
     stat_played: 'Played', stat_avg_rating: 'Avg Rating', stat_games: 'Games',
@@ -1179,17 +1156,11 @@ function applyI18n() {
 }
 
 function _rebuildSelects() {
-  const catOptions = () => Object.entries(CATEGORIES)
-    .map(([k]) => `<option value="${k}">${t('cat_'+k)}</option>`).join('');
   const statusOptions = () => `
     <option value="candidate">${t('status_candidate')}</option>
     <option value="played">${t('status_played')}</option>
-    <option value="abandoned">${t('status_abandoned')}</option>
-    <option value="obsolete">${t('status_obsolete')}</option>
-    <option value="wait-ea">${t('status_wait_ea')}</option>`;
-
-  const filterCat = document.getElementById('filterCategory');
-  if (filterCat) { const v = filterCat.value; filterCat.innerHTML = `<option value="">${t('filter_all')}</option>${catOptions()}`; filterCat.value = v; }
+    <option value="replay">${t('status_replay')}</option>
+    <option value="abandoned">${t('status_abandoned')}</option>`;
 
   const filterSteam = document.getElementById('filterSteamStatus');
   if (filterSteam) { const v = filterSteam.value; filterSteam.innerHTML = `
@@ -1205,9 +1176,6 @@ function _rebuildSelects() {
   if (filterPlat) { const v = filterPlat.value; filterPlat.innerHTML = `
     <option value="">${t('filter_platform_all')}</option>
     <option value="xgp">${t('filter_xgp_only')}</option>`; filterPlat.value = v; }
-
-  const formCat = document.getElementById('wlCategory');
-  if (formCat) { const v = formCat.value; formCat.innerHTML = catOptions(); formCat.value = v; }
 
   const formStatus = document.getElementById('wlStatus');
   if (formStatus) { const v = formStatus.value; formStatus.innerHTML = statusOptions(); formStatus.value = v; }
@@ -1274,24 +1242,11 @@ function loadTheme() {
     if (sel) sel.value = theme;
 }
 
-const CATEGORIES = {
-    vierer:      { label: 'Vierer-Runde',            icon: 'bi-people',          order: 0 },
-    hauptliste:  { label: 'Hauptliste',               icon: 'bi-fire',            order: 1 },
-    neue:        { label: 'Neue Spiele',              icon: 'bi-plus-square',     order: 2 },
-    top10:       { label: 'Top 10',                   icon: 'bi-trophy',          order: 3 },
-    taktik:      { label: 'Taktik / Shooter',         icon: 'bi-crosshair',       order: 4 },
-    replay:      { label: 'Replay',                   icon: 'bi-arrow-repeat',    order: 5 },
-    maybe:       { label: 'Maybe',                    icon: 'bi-question-circle', order: 6 },
-    earlyaccess: { label: 'Early Access',             icon: 'bi-hourglass-split', order: 7 },
-    aeltere:     { label: 'Ältere Einträge',          icon: 'bi-archive',         order: 8 },
-};
-
 const STATUS_LABELS = {
     candidate: { label: 'Kandidat',       class: 'badge-candidate' },
     played:    { label: 'Gespielt',        class: 'badge-played'    },
+    replay:    { label: 'Nochmal',         class: 'badge-replay'    },
     abandoned: { label: 'Abgebrochen',    class: 'badge-abandoned' },
-    obsolete:  { label: 'Aussortiert',    class: 'badge-obsolete'  },
-    'wait-ea': { label: 'Warte EA',       class: 'badge-wait-ea'   },
 };
 
 const STEAM_STATUS_LABELS = {
@@ -1418,6 +1373,7 @@ async function syncFromGist() {
         if (data.changelog)  { changelog    = data.changelog;  localStorage.setItem(CHANGELOG_KEY, JSON.stringify(changelog)); }
         migrateWeeklyDates();
         migrateWeekendDates();
+        migrateWatchlistV2();
         computeUnseenIds();
         // Hide config prompt, re-render
         document.getElementById('configPrompt').style.display = 'none';
@@ -1495,6 +1451,7 @@ function loadFromLocalStorage() {
     try { changelog    = JSON.parse(localStorage.getItem(CHANGELOG_KEY) || '[]'); } catch(e) { changelog = []; }
     migrateWeeklyDates();
     migrateWeekendDates();
+    migrateWatchlistV2();
 }
 
 function saveLocal() {
@@ -1650,6 +1607,21 @@ function migrateWeekendDates() {
     if (changed) saveWeekends();
 }
 
+// Migrate: remove categories, consolidate statuses, add favorite field
+function migrateWatchlistV2() {
+    let changed = false;
+    games.forEach(g => {
+        // Migrate obsolete → abandoned
+        if (g.status === 'obsolete') { g.status = 'abandoned'; changed = true; }
+        // Migrate wait-ea → candidate (steam_status already tracks EA)
+        if (g.status === 'wait-ea') { g.status = 'candidate'; changed = true; }
+        // Add favorite field if missing
+        if (g.favorite === undefined) { g.favorite = false; changed = true; }
+        // Remove category field
+        if (g.category !== undefined) { delete g.category; changed = true; }
+    });
+    if (changed) saveGames();
+}
 
 // ==================== INIT ====================
 function init() {
@@ -1700,16 +1672,16 @@ function renderStats() {
 
 function renderGames() {
     const search       = (document.getElementById('filterName')?.value || '').toLowerCase();
-    const catFilter    = document.getElementById('filterCategory')?.value || '';
     const steamFilter  = document.getElementById('filterSteamStatus')?.value || '';
     const activeStatuses = getActiveStatuses();
     const platFilter   = document.getElementById('filterPlatform')?.value || '';
+    const favFilter    = document.getElementById('filterFavorite')?.value || '';
 
     let filtered = games.filter(g => {
-        if (catFilter    && g.category !== catFilter) return false;
         if (steamFilter  && (g.steam?.steam_status || 'unknown') !== steamFilter) return false;
         if (activeStatuses.length > 0 && !activeStatuses.includes(g.status)) return false;
         if (platFilter === 'xgp' && !g.xgp) return false;
+        if (favFilter === 'yes' && !g.favorite) return false;
         if (search && !g.name.toLowerCase().includes(search) && !(g.notes||'').toLowerCase().includes(search)) return false;
         return true;
     });
@@ -1719,13 +1691,13 @@ function renderGames() {
             case 'review_pct':   return dir * ((a.steam?.review_pct ?? -1) - (b.steam?.review_pct ?? -1));
             case 'review_count': return dir * ((a.steam?.review_count || 0) - (b.steam?.review_count || 0));
             case 'price':        return dir * (parsePrice(a.steam?.price) - parsePrice(b.steam?.price));
-            case 'category':     return dir * ((CATEGORIES[a.category]?.order ?? 99) - (CATEGORIES[b.category]?.order ?? 99));
+            case 'favorite':     return dir * ((b.favorite?1:0) - (a.favorite?1:0));
             case 'steam_status': {
                 const o = {released:0,ea:1,unreleased:2,unknown:3};
                 return dir * ((o[a.steam?.steam_status]??9) - (o[b.steam?.steam_status]??9));
             }
             case 'user_status': {
-                const o = {candidate:0,played:1,'wait-ea':2,abandoned:3,obsolete:4};
+                const o = {candidate:0,replay:1,played:2,abandoned:3};
                 return dir * ((o[a.status]??9) - (o[b.status]??9));
             }
             case 'added': return dir * ((a.added||'').localeCompare(b.added||''));
@@ -1738,8 +1710,6 @@ function renderGames() {
     emptyMsg.style.display = 'none';
     tbody.innerHTML = filtered.map(game => {
         const steam          = game.steam || {};
-        const catInfo        = CATEGORIES[game.category];
-        const catLabel       = catInfo ? `<i class="${catInfo.icon}"></i> ${t('cat_'+game.category)}` : game.category;
         const statusInfo     = STATUS_LABELS[game.status] || STATUS_LABELS.candidate;
         const statusLabel    = t('status_'+(game.status||'candidate').replace(/-/g,'_'));
         const steamKey       = steam.steam_status || 'unknown';
@@ -1767,11 +1737,13 @@ function renderGames() {
         if (game.platform === 'epic') platforms.push(`<span class="badge badge-epic">${t('platform_epic')}</span>`);
         if (game.platform === 'gog')  platforms.push(`<span class="badge badge-gog">${t('platform_gog')}</span>`);
         const platformHtml = platforms.join(' ') || '';
-        const inactiveClass = ['played','abandoned','obsolete'].includes(game.status) ? ' row-inactive' : '';
+        const inactiveClass = ['played','abandoned'].includes(game.status) ? ' row-inactive' : '';
         const newClass = _unseenItemIds.has(game.id) ? ' row-new' : '';
+        const favIcon = game.favorite ? 'bi-star-fill' : 'bi-star';
+        const favClass = game.favorite ? ' active' : '';
         return `<tr class="${inactiveClass}${newClass}" onclick="openEditModal('${game.id}')">
+            <td style="text-align:center"><i class="bi ${favIcon} fav-star${favClass}" onclick="event.stopPropagation(); toggleFavorite('${game.id}')" title="Favorit"></i></td>
             <td>${noAppIdIcon}${steamLink}${notesHtml}</td>
-            <td><small>${catLabel}</small></td>
             <td><span class="badge ${statusInfo.class}">${statusLabel}</span></td>
             <td>${platformHtml}</td>
             <td class="col-steam col-steam-first"><span class="badge ${steamStatusInfo.class}">${steamLabel}</span></td>
@@ -1859,6 +1831,14 @@ document.addEventListener('click', e => {
     }
 });
 
+function toggleFavorite(id) {
+    const game = games.find(g => g.id === id);
+    if (!game) return;
+    game.favorite = !game.favorite;
+    addChangelogEntry('edited', 'watchlist', game.name, id, game.favorite ? '★' : '☆');
+    saveGames(); renderGames();
+}
+
 function sortByColumn(col) {
     if (currentSortColumn === col) currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
     else { currentSortColumn = col; currentSortDir = (col === 'review_pct' || col === 'review_count' || col === 'added') ? 'desc' : 'asc'; }
@@ -1896,7 +1876,6 @@ function openAddModal() {
         document.getElementById('wlName').value = '';
         document.getElementById('wlDuplicateHint').style.display = 'none';
         document.getElementById('wlAppId').value = '';
-        document.getElementById('wlCategory').value = 'hauptliste';
         document.getElementById('wlStatus').value = 'candidate';
         document.getElementById('wlNotes').value = '';
         document.getElementById('wlPlatformXgp').checked = false;
@@ -1913,7 +1892,6 @@ function openEditModal(id) {
     document.getElementById('modalWatchlistTitle').textContent = t('modal_edit_game');
     document.getElementById('wlName').value = game.name;
     document.getElementById('wlAppId').value = game.appid || '';
-    document.getElementById('wlCategory').value = game.category;
     document.getElementById('wlStatus').value = game.status;
     document.getElementById('wlNotes').value = game.notes || '';
     document.getElementById('wlPlatformXgp').checked  = !!game.xgp;
@@ -1932,7 +1910,6 @@ function saveWatchlistEntry() {
     const name = document.getElementById('wlName').value.trim();
     if (!name) { toast(t('toast_name_required')); return; }
     const appid    = parseInt(document.getElementById('wlAppId').value) || null;
-    const category = document.getElementById('wlCategory').value;
     const status   = document.getElementById('wlStatus').value;
     const notes    = document.getElementById('wlNotes').value.trim();
     const xgp      = document.getElementById('wlPlatformXgp').checked;
@@ -1941,9 +1918,9 @@ function saveWatchlistEntry() {
                    : 'steam';
     if (editingId) {
         const game = games.find(g => g.id === editingId);
-        if (game) { game.name = name; game.appid = appid; game.category = category; game.status = status; game.notes = notes; game.xgp = xgp; game.platform = platform; }
+        if (game) { game.name = name; game.appid = appid; game.status = status; game.notes = notes; game.xgp = xgp; game.platform = platform; }
     } else {
-        games.push({ id: crypto.randomUUID(), name, appid, category, status, notes, xgp, platform,
+        games.push({ id: crypto.randomUUID(), name, appid, status, notes, xgp, platform, favorite: false,
             added: new Date().toISOString(),
             steam: { price: '', review_pct: null, review_count: 0, steam_status: 'unknown', release_date: '', is_ea: false }
         });
