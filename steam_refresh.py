@@ -15,6 +15,10 @@ Usage:
   Or via environment variables:
   GIST_ID=... GITHUB_PAT=... python steam_refresh.py
 
+  By default, only games with an AppID but no Steam data yet are processed.
+  To refresh all games:
+  python steam_refresh.py --full
+
   Dry run (fetch + print, no write):
   python steam_refresh.py --dry-run
 
@@ -218,6 +222,7 @@ def main():
     parser = argparse.ArgumentParser(description="Update Steam data and XGP availability in Coop Games Gist")
     parser.add_argument("--gist-id",  default=os.environ.get("GIST_ID"),     help="GitHub Gist ID")
     parser.add_argument("--pat",      default=os.environ.get("GITHUB_PAT"),  help="GitHub Personal Access Token (gist scope)")
+    parser.add_argument("--full",     action="store_true", help="Refresh all games (default: only new games without Steam data)")
     parser.add_argument("--dry-run",  action="store_true", help="Fetch and print, do not write back to Gist")
     parser.add_argument("--skip-xgp", action="store_true", help="Skip PC Game Pass availability check")
     parser.add_argument("--delay",    type=float, default=REQUEST_DELAY,     help="Seconds between Steam API requests (default: 1.2)")
@@ -240,7 +245,18 @@ def main():
     data = json.loads(raw)
     watchlist = data.get("watchlist", [])
     games_with_appid = [g for g in watchlist if g.get("appid")]
-    print(f"{len(watchlist)} games in Gist, {len(games_with_appid)} with Steam AppID.\n")
+
+    def is_new(g):
+        """Game has an AppID but no Steam data fetched yet."""
+        steam = g.get("steam", {})
+        return g.get("appid") and not steam.get("steam_updated")
+
+    new_games = [g for g in watchlist if is_new(g)]
+    print(f"{len(watchlist)} games in Gist, {len(games_with_appid)} with Steam AppID, {len(new_games)} without Steam data.\n")
+
+    if not args.full and not new_games:
+        print("No new games to process. Use --full to refresh all.")
+        return
 
     # --- Fetch PC Game Pass catalog ---
     xgp_titles: set[str] = set()
@@ -256,13 +272,15 @@ def main():
     updated = 0
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    for i, game in enumerate(watchlist, 1):
+    process_list = watchlist if args.full else new_games
+
+    for i, game in enumerate(process_list, 1):
         appid = game.get("appid")
         name  = game.get("name", "?")
         changes = []
 
         if appid:
-            print(f"[{i}/{len(watchlist)}] {name} (AppID {appid})...", end=" ", flush=True)
+            print(f"[{i}/{len(process_list)}] {name} (AppID {appid})...", end=" ", flush=True)
 
             steam = fetch_steam_data(int(appid))
 
@@ -284,7 +302,7 @@ def main():
             price_str  = steam["price"] or "—"
             suffix     = f"{status_str} | {price_str} | {review_str}"
         else:
-            print(f"[{i}/{len(watchlist)}] {name} (no AppID)...", end=" ", flush=True)
+            print(f"[{i}/{len(process_list)}] {name} (no AppID)...", end=" ", flush=True)
             suffix = "no Steam data"
 
         # XGP check — works for all games regardless of AppID
