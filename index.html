@@ -968,7 +968,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.9.1';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -1726,9 +1726,9 @@ function renderGames() {
         const countHtml  = steam.review_count > 0 ? formatCount(steam.review_count) : '—';
         const steamLink  = game.appid
             ? `<a href="https://store.steampowered.com/app/${game.appid}" target="_blank" onclick="event.stopPropagation()">${escHtml(game.name)}</a>`
-            : escHtml(game.name);
+            : `<a href="https://store.steampowered.com/search/?term=${encodeURIComponent(game.name)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--text)">${escHtml(game.name)}</a>`;
         const noAppIdIcon = !game.appid
-            ? `<i class="bi bi-question-circle" style="color:var(--text-dim);font-size:0.8em;margin-right:0.35em" title="No Steam App ID set"></i>`
+            ? `<i class="bi bi-search" style="color:var(--text-dim);font-size:0.8em;margin-right:0.35em" title="Steam search (no App ID)"></i>`
             : '';
         const notesHtml  = game.notes ? `<br><small style="color:var(--text-dim)">${escHtml(game.notes)}</small>` : '';
         const addedHtml  = game.added ? new Date(game.added).toLocaleDateString('de-DE') : '—';
