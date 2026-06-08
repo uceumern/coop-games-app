@@ -524,6 +524,7 @@ tr.row-inactive:hover { opacity: 0.75; }
     .stats { gap: 0.5rem; padding: 0.5rem 0.75rem; }
     .stat { padding: 0.5rem 0.75rem; min-width: 60px; }
     .stat-value { font-size: 1rem; }
+    .stat-hide-mobile { display: none; }
     /* Main padding */
     .main { padding: 0.6rem 0.5rem; }
     /* Table: horizontal scroll in landscape */
@@ -968,7 +969,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.9.1';
+const APP_VERSION = '1.9.2';
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -1666,7 +1667,7 @@ function renderStats() {
         <div class="stat"><div class="stat-value">${candidates}</div><div class="stat-label">${t('stat_candidates')}</div></div>
         <div class="stat"><div class="stat-value">${released}</div><div class="stat-label">${t('stat_released')}</div></div>
         <div class="stat"><div class="stat-value">${played}</div><div class="stat-label">${t('stat_played')}</div></div>
-        <div class="stat"><div class="stat-value">${avgReview}%</div><div class="stat-label">${t('stat_avg_rating')}</div></div>
+        <div class="stat stat-hide-mobile"><div class="stat-value">${avgReview}%</div><div class="stat-label">${t('stat_avg_rating')}</div></div>
     `;
 }
 
@@ -2040,7 +2041,7 @@ function renderWeeklyStats() {
         <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">${t('stat_games')}</div></div>
         <div class="stat"><div class="stat-value">${Math.round(totalHours)}</div><div class="stat-label">${t('stat_total_hours')}</div></div>
         <div class="stat"><div class="stat-value">${avgHours}</div><div class="stat-label">${t('stat_avg_hours')}</div></div>
-        <div class="stat"><div class="stat-value">${years}</div><div class="stat-label">${t('stat_years_active')}</div></div>
+        <div class="stat stat-hide-mobile"><div class="stat-value">${years}</div><div class="stat-label">${t('stat_years_active')}</div></div>
     `;
 }
 
