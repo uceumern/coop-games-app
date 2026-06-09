@@ -969,7 +969,8 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.9.2';
+const APP_VERSION = '1.10.0';
+const SCHEMA_VERSION = 2; // bump when adding new migrations
 
 // ==================== CONFIG KEYS ====================
 const STORAGE_KEY        = 'coop_tracker_watchlist';
@@ -1037,6 +1038,7 @@ const STRINGS = {
     hint_existing_games: 'Bereits in der Liste:',
     sync_connecting: 'Verbinde...', sync_loading: 'Lade...', sync_syncing: 'Synchronisiere...',
     sync_synced: 'Synchronisiert', sync_error: 'Fehler', sync_offline: 'Nicht konfiguriert',
+    sync_conflict: 'Daten wurden extern geändert — neu geladen',
     sync_just_now: 'gerade eben', sync_minutes: 'Min.', sync_hours: 'Std.', sync_days: 'Tage',
     th_platform: 'Plattform',
     platform_xgp: 'Game Pass', platform_epic: 'Epic', platform_gog: 'GOG',
@@ -1110,6 +1112,7 @@ const STRINGS = {
     hint_existing_games: 'Already in the list:',
     sync_connecting: 'Connecting...', sync_loading: 'Loading...', sync_syncing: 'Syncing...',
     sync_synced: 'Synced', sync_error: 'Error', sync_offline: 'Not configured',
+    sync_conflict: 'Data changed externally — reloaded',
     sync_just_now: 'just now', sync_minutes: 'min', sync_hours: 'hrs', sync_days: 'days',
     th_platform: 'Platform',
     platform_xgp: 'Game Pass', platform_epic: 'Epic', platform_gog: 'GOG',
@@ -1262,6 +1265,8 @@ let weeklyGames  = [];
 let weekendGames = [];
 let changelog    = [];
 let _unseenItemIds = new Set();
+let _knownLastModified = null; // optimistic locking: last known Gist timestamp
+let _isSyncing = false;        // prevent concurrent sync writes
 let activeView   = 'watchlist';
 let editingId          = null;
 let currentSortColumn  = 'name';
@@ -1372,9 +1377,17 @@ async function syncFromGist() {
         if (data.weekly)     { weeklyGames  = data.weekly;     localStorage.setItem(STORAGE_KEY_WEEKLY, JSON.stringify(weeklyGames)); }
         if (data.weekends)   { weekendGames = data.weekends;   localStorage.setItem(STORAGE_KEY_WEEKENDS, JSON.stringify(weekendGames)); }
         if (data.changelog)  { changelog    = data.changelog;  localStorage.setItem(CHANGELOG_KEY, JSON.stringify(changelog)); }
-        migrateWeeklyDates();
-        migrateWeekendDates();
-        migrateWatchlistV2();
+        // Track last known state for optimistic locking
+        _knownLastModified = data.lastModified || null;
+        // Run migrations only if schema is outdated
+        const gistSchema = data.schemaVersion || 0;
+        if (gistSchema < SCHEMA_VERSION) {
+            migrateWeeklyDates();
+            migrateWeekendDates();
+            migrateWatchlistV2();
+            // Write migrated data + new schema version back
+            await syncToGist(true);
+        }
         computeUnseenIds();
         // Hide config prompt, re-render
         document.getElementById('configPrompt').style.display = 'none';
@@ -1392,23 +1405,41 @@ async function syncFromGist() {
     }
 }
 
-async function syncToGist() {
-    if (!isConfigured()) return;
-    const payload = {
-        lastModified: new Date().toISOString(),
-        lastModifiedBy: getUserName(),
-        watchlist: games,
-        weekly: weeklyGames,
-        weekends: weekendGames,
-        changelog: changelog,
-    };
+async function syncToGist(skipLockCheck) {
+    if (!isConfigured() || _isSyncing) return;
+    _isSyncing = true;
     try {
+        // Optimistic locking: check if Gist changed since we last loaded
+        if (!skipLockCheck && _knownLastModified) {
+            const current = await loadFromGist();
+            if (current.lastModified && current.lastModified !== _knownLastModified) {
+                // Conflict: someone else wrote to the Gist — reload instead of overwriting
+                console.warn('Sync conflict: Gist was modified externally, reloading...');
+                _isSyncing = false;
+                toast(t('sync_conflict'));
+                await syncFromGist();
+                return;
+            }
+        }
+        const now = new Date().toISOString();
+        const payload = {
+            schemaVersion: SCHEMA_VERSION,
+            lastModified: now,
+            lastModifiedBy: getUserName(),
+            watchlist: games,
+            weekly: weeklyGames,
+            weekends: weekendGames,
+            changelog: changelog,
+        };
         await saveToGist(payload);
-        setSyncStatus('synced', payload.lastModified, payload.lastModifiedBy);
+        _knownLastModified = now;
+        setSyncStatus('synced', now, payload.lastModifiedBy);
     } catch (e) {
         console.error('Gist save error:', e);
         setSyncStatus('error', null, null, e.message);
         toast('Fehler beim Speichern: ' + e.message);
+    } finally {
+        _isSyncing = false;
     }
 }
 
@@ -1450,9 +1481,7 @@ function loadFromLocalStorage() {
     try { weeklyGames  = JSON.parse(localStorage.getItem(STORAGE_KEY_WEEKLY) || '[]'); } catch(e) { weeklyGames = []; }
     try { weekendGames = JSON.parse(localStorage.getItem(STORAGE_KEY_WEEKENDS) || '[]'); } catch(e) { weekendGames = []; }
     try { changelog    = JSON.parse(localStorage.getItem(CHANGELOG_KEY) || '[]'); } catch(e) { changelog = []; }
-    migrateWeeklyDates();
-    migrateWeekendDates();
-    migrateWatchlistV2();
+    // Note: migrations only run via syncFromGist() with schema version check
 }
 
 function saveLocal() {
@@ -2201,6 +2230,14 @@ function deleteWeekend(id) {
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
     if (e.key === 'n' && e.ctrlKey) { e.preventDefault(); openAddModal(); }
+});
+
+// ==================== VISIBILITY LISTENER ====================
+// Re-sync from Gist when app returns from background (tab switch, PWA resume)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && isConfigured()) {
+        syncFromGist();
+    }
 });
 
 // ==================== START ====================
