@@ -27,6 +27,7 @@ Everything is in `index.html` — no build step, no framework, no bundler. Vanil
 **Gist data shape:**
 ```json
 {
+  "schemaVersion": 2,
   "watchlist": [{ "id", "name", "appid", "status", "favorite", "xgp", "platform", "notes", "added", "steam": { "steam_status", "price", "review_pct", "review_count", "steam_updated" } }],
   "weekly":    [{ "id", "date", "title", "hours", "rating", "notes" }],
   "weekends":  [{ "id", "dateStart", "dateEnd", "title", "location", "special" }],
