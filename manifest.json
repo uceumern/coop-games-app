@@ -1,0 +1,10 @@
+{
+  "name": "Coop Games Tracker",
+  "short_name": "Coop Games",
+  "description": "Shared co-op games watchlist tracker",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1a4268",
+  "theme_color": "#1a4268",
+  "icons": []
+}

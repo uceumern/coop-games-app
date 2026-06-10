@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coop Games Tracker</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 5 L90 20 L90 55 Q90 80 50 97 Q10 80 10 55 L10 20 Z' fill='%232e5f8a' stroke='%23c8d4e0' stroke-width='3'/><polygon points='50,28 54,40 67,40 57,48 61,60 50,52 39,60 43,48 33,40 46,40' fill='%23dce6ef'/></svg>">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a4268">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
 :root {
@@ -93,6 +96,7 @@ a:hover { text-decoration: underline; }
 .header h1 { font-size: 1.2rem; font-weight: 600; letter-spacing: 0.3px; }
 .header h1 i { margin-right: 0.5rem; }
 .header-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+#btnRefresh { display: none; }
 
 .btn {
     padding: 0.35rem 0.7rem;
@@ -518,6 +522,8 @@ tr.row-inactive:hover { opacity: 0.75; }
     .header-actions { gap: 0.25rem; }
     /* Hide Export and Import on mobile */
     #btnExport, #btnImport { display: none; }
+    /* Show refresh button on mobile */
+    #btnRefresh { display: inline-flex; }
     /* Header buttons: min 44px touch target */
     .header .btn { min-height: 44px; min-width: 44px; padding: 0 0.6rem; font-size: 0.8rem; justify-content: center; }
     /* Stats */
@@ -640,6 +646,7 @@ tr.row-inactive:hover { opacity: 0.75; }
         <span id="headerSyncStatus" style="font-size:0.72rem;color:rgba(255,255,255,0.55);align-self:center;margin-right:0.25rem"></span>
         <button class="btn btn-primary" onclick="openAddModal()"><i class="bi bi-plus-circle"></i> <span data-i18n="btn_add">Hinzufügen</span></button>
         <button class="btn btn-bell" onclick="toggleActivity()" title="Activity"><i class="bi bi-bell"></i><span id="activityBadge" class="badge-notif" style="display:none">0</span></button>
+        <button class="btn" id="btnRefresh" onclick="location.reload()" title="Reload"><i class="bi bi-arrow-clockwise"></i></button>
         <button class="btn" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
         <button class="btn" id="btnExport" onclick="exportData()"><i class="bi bi-download"></i> Export</button>
         <button class="btn" id="btnImport" onclick="document.getElementById('importFile').click()"><i class="bi bi-upload"></i> Import</button>
@@ -969,7 +976,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.10.0';
+const APP_VERSION = '1.11.0';
 const SCHEMA_VERSION = 2; // bump when adding new migrations
 
 // ==================== CONFIG KEYS ====================
