@@ -976,7 +976,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.11.0';
+const APP_VERSION = '1.11.1';
 const SCHEMA_VERSION = 2; // bump when adding new migrations
 
 // ==================== CONFIG KEYS ====================
@@ -2093,6 +2093,7 @@ function renderWeekly() {
     const dir = weeklySortDir === 'asc' ? 1 : -1;
     filtered.sort((a, b) => {
         if (weeklySortCol === 'hours') return dir * ((a.hours||0) - (b.hours||0));
+        if (weeklySortCol === 'rating') return dir * ((a.rating||0) - (b.rating||0));
         if (weeklySortCol === 'title') return dir * a.title.localeCompare(b.title);
         return dir * (a.date||'').localeCompare(b.date||'');
     });
@@ -2133,7 +2134,7 @@ function formatWeekendDate(dateStart, dateEnd) {
 
 function sortWeeklyBy(col) {
     if (weeklySortCol === col) weeklySortDir = weeklySortDir === 'asc' ? 'desc' : 'asc';
-    else { weeklySortCol = col; weeklySortDir = col === 'date' ? 'desc' : 'asc'; }
+    else { weeklySortCol = col; weeklySortDir = (col === 'date' || col === 'rating') ? 'desc' : 'asc'; }
     renderWeekly();
 }
 
