@@ -976,7 +976,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.11.1';
+const APP_VERSION = '1.11.2';
 const SCHEMA_VERSION = 2; // bump when adding new migrations
 
 // ==================== CONFIG KEYS ====================
@@ -1416,18 +1416,6 @@ async function syncToGist(skipLockCheck) {
     if (!isConfigured() || _isSyncing) return;
     _isSyncing = true;
     try {
-        // Optimistic locking: check if Gist changed since we last loaded
-        if (!skipLockCheck && _knownLastModified) {
-            const current = await loadFromGist();
-            if (current.lastModified && current.lastModified !== _knownLastModified) {
-                // Conflict: someone else wrote to the Gist — reload instead of overwriting
-                console.warn('Sync conflict: Gist was modified externally, reloading...');
-                _isSyncing = false;
-                toast(t('sync_conflict'));
-                await syncFromGist();
-                return;
-            }
-        }
         const now = new Date().toISOString();
         const payload = {
             schemaVersion: SCHEMA_VERSION,
@@ -2242,9 +2230,17 @@ document.addEventListener('keydown', e => {
 
 // ==================== VISIBILITY LISTENER ====================
 // Re-sync from Gist when app returns from background (tab switch, PWA resume)
+// Only sync if tab was hidden for at least 30 seconds to avoid disrupting active editing
+let _hiddenSince = null;
 document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && isConfigured()) {
-        syncFromGist();
+    if (document.visibilityState === 'hidden') {
+        _hiddenSince = Date.now();
+    } else if (document.visibilityState === 'visible' && isConfigured() && _hiddenSince) {
+        const elapsed = Date.now() - _hiddenSince;
+        _hiddenSince = null;
+        if (elapsed > 30000) {
+            syncFromGist();
+        }
     }
 });
 
