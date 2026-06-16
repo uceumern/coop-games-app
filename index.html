@@ -976,7 +976,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.11.2';
+const APP_VERSION = '1.12.0';
 const SCHEMA_VERSION = 2; // bump when adding new migrations
 
 // ==================== CONFIG KEYS ====================
@@ -1786,11 +1786,20 @@ function renderGames() {
 
 
 function getReviewColor(pct) {
-    if (pct >= 90) return '#198754';
-    if (pct >= 80) return '#4caf50';
-    if (pct >= 70) return '#e65100';
-    if (pct >= 60) return '#ff9800';
-    return '#dc3545';
+    // Aligned with Steam's own rating tiers:
+    //   95+ Overwhelmingly Positive → deep green
+    //   80+ Very Positive           → green
+    //   70+ Mostly Positive         → yellow-green
+    //   50+ Mixed                   → orange
+    //   <50 Negative                → red
+    // Smooth HSL interpolation within each tier
+    let hue;
+    if (pct >= 95)      hue = 120;                                    // deep green
+    else if (pct >= 80) hue = 80 + (pct - 80) / 15 * 40;             // 80→120 green ramp
+    else if (pct >= 70) hue = 50 + (pct - 70) / 10 * 30;             // 50→80 yellow-green
+    else if (pct >= 50) hue = 15 + (pct - 50) / 20 * 35;             // 15→50 orange→yellow
+    else                hue = pct / 50 * 15;                          // 0→15 red→dark orange
+    return `hsl(${hue}, 75%, 40%)`;
 }
 
 function parsePrice(s) {
