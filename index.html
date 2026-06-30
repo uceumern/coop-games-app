@@ -841,7 +841,7 @@ tr.row-inactive:hover { opacity: 0.75; }
             </tr>
             <tr class="filter-row">
                 <th></th>
-                <th><input type="text" id="searchWeekends" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderWeekends()"></th>
+                <th><div class="search-wrap"><input type="text" id="searchWeekends" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderWeekends()"><button class="search-clear" onclick="clearSearch('searchWeekends', renderWeekends)" title="Clear"><i class="bi bi-x"></i></button></div></th>
                 <th><select id="filterWeekendsLocation" onchange="renderWeekends()"><option value="">Alle</option></select></th>
                 <th></th>
                 <th></th>
