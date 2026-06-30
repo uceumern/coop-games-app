@@ -96,8 +96,10 @@ Steam data is updated via `steam_refresh.py` (CLI, not in-browser):
 
 ```bash
 pip install requests
-python steam_refresh.py --gist-id <GIST_ID> --pat <GITHUB_PAT>          # only new games (default)
-python steam_refresh.py --gist-id <GIST_ID> --pat <GITHUB_PAT> --full   # refresh all games
+python steam_refresh.py --gist-id <GIST_ID> --pat <GITHUB_PAT>                # only new games (default)
+python steam_refresh.py --gist-id <GIST_ID> --pat <GITHUB_PAT> --full         # refresh all games
+python steam_refresh.py --gist-id <GIST_ID> --pat <GITHUB_PAT> --candidates   # refresh candidates & replays
+python steam_refresh.py --gist-id <GIST_ID> --pat <GITHUB_PAT> --favorites    # refresh favorites
 python steam_refresh.py --gist-id <GIST_ID> --pat <GITHUB_PAT> --dry-run
 ```
 
