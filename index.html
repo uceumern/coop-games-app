@@ -243,6 +243,15 @@ tr.row-inactive:hover { opacity: 0.75; }
     color: #fff;
 }
 .game-table thead tr.filter-row input::placeholder { color: rgba(255,255,255,0.45); }
+.search-wrap { position: relative; }
+.search-wrap input { padding-right: 1.4rem !important; }
+.search-wrap .search-clear {
+    position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer;
+    font-size: 0.7rem; padding: 0; line-height: 1; display: none;
+}
+.search-wrap .search-clear:hover { color: #fff; }
+.search-wrap input:not(:placeholder-shown) + .search-clear { display: block; }
 .game-table thead tr.filter-row select option { background: var(--primary); color: #fff; }
 /* Clickable table rows */
 .game-table tbody tr { cursor: pointer; }
@@ -741,7 +750,7 @@ tr.row-inactive:hover { opacity: 0.75; }
                         <option value="yes">★</option>
                     </select>
                 </th>
-                <th><input type="text" id="filterName" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderGames()"></th>
+                <th><div class="search-wrap"><input type="text" id="filterName" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderGames()"><button class="search-clear" onclick="clearSearch('filterName', renderGames)" title="Clear"><i class="bi bi-x"></i></button></div></th>
                 <th>
                     <button class="multi-select-btn" onclick="toggleStatusFilter()" id="statusFilterBtn">Status</button>
                 </th>
@@ -793,7 +802,7 @@ tr.row-inactive:hover { opacity: 0.75; }
             </tr>
             <tr class="filter-row">
                 <th></th>
-                <th><input type="text" id="searchWeekly" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderWeekly()"></th>
+                <th><div class="search-wrap"><input type="text" id="searchWeekly" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderWeekly()"><button class="search-clear" onclick="clearSearch('searchWeekly', renderWeekly)" title="Clear"><i class="bi bi-x"></i></button></div></th>
                 <th></th>
                 <th>
                     <select id="filterWeeklyRating" onchange="renderWeekly()">
@@ -832,7 +841,7 @@ tr.row-inactive:hover { opacity: 0.75; }
             </tr>
             <tr class="filter-row">
                 <th></th>
-                <th><input type="text" id="searchWeekends" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderWeekends()"></th>
+                <th><div class="search-wrap"><input type="text" id="searchWeekends" data-i18n-ph="filter_search" placeholder="Suche..." oninput="renderWeekends()"><button class="search-clear" onclick="clearSearch('searchWeekends', renderWeekends)" title="Clear"><i class="bi bi-x"></i></button></div></th>
                 <th><select id="filterWeekendsLocation" onchange="renderWeekends()"><option value="">Alle</option></select></th>
                 <th></th>
                 <th></th>
@@ -976,7 +985,7 @@ tr.row-inactive:hover { opacity: 0.75; }
 
 <script>
 // ==================== VERSION ====================
-const APP_VERSION = '1.12.0';
+const APP_VERSION = '1.12.1';
 const SCHEMA_VERSION = 2; // bump when adding new migrations
 
 // ==================== CONFIG KEYS ====================
@@ -1843,6 +1852,12 @@ function getActiveStatuses() {
     const active = [];
     checks.forEach(cb => { if (cb.checked) active.push(cb.value); });
     return active;
+}
+
+function clearSearch(inputId, renderFn) {
+    const el = document.getElementById(inputId);
+    if (el) { el.value = ''; el.focus(); }
+    renderFn();
 }
 
 function toggleStatusFilter() {
