@@ -16,8 +16,17 @@ Usage:
   GIST_ID=... GITHUB_PAT=... python steam_refresh.py
 
   By default, only games with an AppID but no Steam data yet are processed.
-  To refresh all games:
+
+  Refresh all games:
   python steam_refresh.py --full
+
+  Refresh candidates and replays only:
+  python steam_refresh.py --candidates
+
+  Refresh favorites only:
+  python steam_refresh.py --favorites
+
+  Priority: --full > --candidates > --favorites > default (new only)
 
   Dry run (fetch + print, no write):
   python steam_refresh.py --dry-run
@@ -222,8 +231,10 @@ def main():
     parser = argparse.ArgumentParser(description="Update Steam data and XGP availability in Coop Games Gist")
     parser.add_argument("--gist-id",  default=os.environ.get("GIST_ID"),     help="GitHub Gist ID")
     parser.add_argument("--pat",      default=os.environ.get("GITHUB_PAT"),  help="GitHub Personal Access Token (gist scope)")
-    parser.add_argument("--full",     action="store_true", help="Refresh all games (default: only new games without Steam data)")
-    parser.add_argument("--dry-run",  action="store_true", help="Fetch and print, do not write back to Gist")
+    parser.add_argument("--full",       action="store_true", help="Refresh all games (default: only new games without Steam data)")
+    parser.add_argument("--candidates", action="store_true", help="Refresh candidate and replay games only")
+    parser.add_argument("--favorites",  action="store_true", help="Refresh favorite games only")
+    parser.add_argument("--dry-run",    action="store_true", help="Fetch and print, do not write back to Gist")
     parser.add_argument("--skip-xgp", action="store_true", help="Skip PC Game Pass availability check")
     parser.add_argument("--delay",    type=float, default=REQUEST_DELAY,     help="Seconds between Steam API requests (default: 1.2)")
     args = parser.parse_args()
@@ -252,10 +263,27 @@ def main():
         return g.get("appid") and not steam.get("steam_updated")
 
     new_games = [g for g in watchlist if is_new(g)]
-    print(f"{len(watchlist)} games in Gist, {len(games_with_appid)} with Steam AppID, {len(new_games)} without Steam data.\n")
+    candidate_games = [g for g in games_with_appid if g.get("status") in ("candidate", "replay")]
+    favorite_games = [g for g in games_with_appid if g.get("favorite")]
+    print(f"{len(watchlist)} games in Gist, {len(games_with_appid)} with Steam AppID, {len(new_games)} without Steam data.")
+    print(f"  {len(candidate_games)} candidates/replays, {len(favorite_games)} favorites.\n")
 
-    if not args.full and not new_games:
-        print("No new games to process. Use --full to refresh all.")
+    # Priority: --full > --candidates > --favorites > default (new only)
+    if args.full:
+        process_list = watchlist
+        mode = "all games"
+    elif args.candidates:
+        process_list = candidate_games
+        mode = "candidates & replays"
+    elif args.favorites:
+        process_list = favorite_games
+        mode = "favorites"
+    else:
+        process_list = new_games
+        mode = "new games only"
+
+    if not process_list:
+        print(f"No games to process ({mode}). Use --full to refresh all.")
         return
 
     # --- Fetch PC Game Pass catalog ---
@@ -271,8 +299,7 @@ def main():
     # --- Fetch Steam data and check XGP ---
     updated = 0
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    process_list = watchlist if args.full else new_games
+    print(f"Processing {len(process_list)} games ({mode})...\n")
 
     for i, game in enumerate(process_list, 1):
         appid = game.get("appid")
