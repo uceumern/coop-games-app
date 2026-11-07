@@ -55,6 +55,7 @@ DETAILS_URL   = "https://store.steampowered.com/api/appdetails"
 REVIEWS_URL   = "https://store.steampowered.com/appreviews/{appid}"
 GIST_FILE     = "coop_games_data.json"
 REQUEST_DELAY = 1.2  # seconds between Steam requests
+BACKOFF_SECONDS = (30, 60, 120)  # waits between retries when Steam rate-limits us
 
 # PC Game Pass catalog (unofficial but stable Microsoft endpoints)
 XGP_SIGL_URL    = "https://catalog.gamepass.com/sigls/v2"
@@ -92,17 +93,42 @@ def gist_patch(gist_id: str, pat: str, content: str):
 # Steam API
 # ---------------------------------------------------------------------------
 
+class RateLimited(Exception):
+    """Raised when Steam keeps throttling us after all retries."""
+
+
+def steam_get_json(url: str, params: dict):
+    """
+    GET a Steam endpoint and return parsed JSON.
+    Steam signals rate limiting with HTTP 429 or a 3xx redirect to the store
+    homepage (HTML instead of JSON). Those are retried with backoff and
+    finally raise RateLimited. Other errors propagate to the caller.
+    """
+    for attempt in range(len(BACKOFF_SECONDS) + 1):
+        resp = requests.get(url, params=params, timeout=10, allow_redirects=False)
+        throttled = (
+            resp.status_code == 429
+            or 300 <= resp.status_code < 400
+            or "json" not in resp.headers.get("Content-Type", "").lower()
+        )
+        if not throttled:
+            resp.raise_for_status()
+            return resp.json()
+        if attempt == len(BACKOFF_SECONDS):
+            raise RateLimited(f"HTTP {resp.status_code} from {url}")
+        wait = BACKOFF_SECONDS[attempt]
+        print(f"\n    ⏳ Rate limited by Steam — waiting {wait}s before retry "
+              f"({attempt + 1}/{len(BACKOFF_SECONDS)})...", file=sys.stderr)
+        time.sleep(wait)
+
+
 def steam_details(appid: int) -> dict | None:
     try:
-        resp = requests.get(
-            DETAILS_URL,
-            params={"appids": appid, "cc": "DE", "l": "english"},
-            timeout=10,
-        )
-        resp.raise_for_status()
-        data = resp.json()
+        data = steam_get_json(DETAILS_URL, {"appids": appid, "cc": "DE", "l": "english"})
         entry = data.get(str(appid), {})
         return entry.get("data") if entry.get("success") else None
+    except RateLimited:
+        raise
     except Exception as e:
         print(f"    ⚠ Steam details failed: {e}", file=sys.stderr)
         return None
@@ -110,14 +136,13 @@ def steam_details(appid: int) -> dict | None:
 
 def steam_reviews(appid: int) -> dict | None:
     try:
-        resp = requests.get(
+        data = steam_get_json(
             REVIEWS_URL.format(appid=appid),
-            params={"json": 1, "language": "all", "purchase_type": "all", "num_per_page": 0},
-            timeout=10,
+            {"json": 1, "language": "all", "purchase_type": "all", "num_per_page": 0},
         )
-        resp.raise_for_status()
-        data = resp.json()
         return data.get("query_summary") if data.get("success") == 1 else None
+    except RateLimited:
+        raise
     except Exception as e:
         print(f"    ⚠ Steam reviews failed: {e}", file=sys.stderr)
         return None
@@ -298,6 +323,7 @@ def main():
 
     # --- Fetch Steam data and check XGP ---
     updated = 0
+    steam_blocked = False
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     print(f"Processing {len(process_list)} games ({mode})...\n")
 
@@ -306,11 +332,20 @@ def main():
         name  = game.get("name", "?")
         changes = []
 
-        if appid:
-            print(f"[{i}/{len(process_list)}] {name} (AppID {appid})...", end=" ", flush=True)
+        print(f"[{i}/{len(process_list)}] {name}"
+              f"{f' (AppID {appid})' if appid else ' (no AppID)'}...", end=" ", flush=True)
 
-            steam = fetch_steam_data(int(appid))
+        steam = None
+        if appid and not steam_blocked:
+            try:
+                steam = fetch_steam_data(int(appid))
+            except RateLimited as e:
+                steam_blocked = True
+                print(f"\n⚠ Steam keeps rate-limiting ({e}). Skipping remaining Steam "
+                      f"fetches; data fetched so far is still saved. Re-run later to finish.\n",
+                      file=sys.stderr)
 
+        if steam:
             steam_obj = game.setdefault("steam", {})
             for key in ("steam_status", "price", "review_pct", "review_count"):
                 if steam[key] is not None and steam_obj.get(key) != steam[key]:
@@ -328,8 +363,9 @@ def main():
             review_str = f"{steam['review_pct']}%" if steam["review_pct"] else "—"
             price_str  = steam["price"] or "—"
             suffix     = f"{status_str} | {price_str} | {review_str}"
+        elif appid:
+            suffix = "Steam skipped (rate limited)"
         else:
-            print(f"[{i}/{len(process_list)}] {name} (no AppID)...", end=" ", flush=True)
             suffix = "no Steam data"
 
         # XGP check — works for all games regardless of AppID
@@ -342,7 +378,8 @@ def main():
         xgp_str = " [XGP]" if game.get("xgp") else ""
         print(f"{suffix}{xgp_str}" + (f" ({', '.join(changes)} changed)" if changes else ""))
 
-    print(f"\n{updated} games processed.")
+    print(f"\n{updated} games processed." +
+          (" Steam fetch was cut short by rate limiting — re-run later." if steam_blocked else ""))
 
     if args.dry_run:
         print("Dry-run: Gist not updated.")
